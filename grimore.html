@@ -1,525 +1,634 @@
-<index.html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<title>Grimoire — D&D 5e Companion</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Grimoire</title>
 <style>
-:root{
-  --bg:#14100c; --bg2:#1e1812; --panel:#262019; --panel2:#2f2820; --ink:#e8dcc4; --ink-dim:#a89877;
-  --accent:#d4a348; --accent2:#8a5c2b; --danger:#c0453a; --ok:#6d9c58; --edge:#3d3427; --dice:#d4a348;
-}
-[data-theme="elven"]{
-  --bg:#0b1410; --bg2:#101d16; --panel:#16241c; --panel2:#1d2f24; --ink:#dce8dc; --ink-dim:#7fa08a;
-  --accent:#7fc9a0; --accent2:#3f7a5c; --danger:#c05a5a; --ok:#7fc9a0; --edge:#26402f; --dice:#7fc9a0;
-}
-[data-theme="abyssal"]{
-  --bg:#120a0c; --bg2:#1a0e12; --panel:#22121a; --panel2:#2c1822; --ink:#ecdcd8; --ink-dim:#a87f82;
-  --accent:#d46a4a; --accent2:#8a3a2b; --danger:#e05050; --ok:#6d9c58; --edge:#43232c; --dice:#e07050;
-}
-*{box-sizing:border-box; margin:0; -webkit-tap-highlight-color:transparent}
-html,body{height:100%; overscroll-behavior:none}
-body{background:var(--bg); color:var(--ink); font:15px/1.45 Georgia,'Times New Roman',serif; user-select:none}
-body::before{content:""; position:fixed; inset:0; pointer-events:none; opacity:.5; z-index:0;
-  background:radial-gradient(ellipse at 50% -10%, rgba(255,220,150,.06), transparent 60%)}
-input,select,textarea,button{font:inherit; color:inherit}
-input,select,textarea{background:var(--bg2); border:1px solid var(--edge); border-radius:8px; padding:8px 10px; width:100%; user-select:text}
-h1,h2,h3{font-variant:small-caps; letter-spacing:.06em; font-weight:600}
-h1{font-size:1.5em} h2{font-size:1.2em} h3{font-size:1.02em}
-button{background:var(--panel2); border:1px solid var(--edge); border-radius:10px; padding:9px 14px; cursor:pointer; color:var(--ink); transition:filter .15s, transform .05s}
-button:active{transform:scale(.97)}
-button.pri{background:var(--accent2); border-color:var(--accent); color:#fff}
-button.ghost{background:transparent}
-button:disabled{opacity:.4}
-.row{display:flex; gap:8px; align-items:center} .row.wrap{flex-wrap:wrap}
-.col{display:flex; flex-direction:column; gap:8px}
-.grow{flex:1} .dim{color:var(--ink-dim)} .small{font-size:.82em} .right{text-align:right}
-.card{background:var(--panel); border:1px solid var(--edge); border-radius:14px; padding:12px}
-hr{border:none; border-top:1px solid var(--edge); margin:8px 0}
-.tag{display:inline-block; background:var(--bg2); border:1px solid var(--edge); border-radius:20px; padding:2px 10px; font-size:.8em; margin:2px}
-.tag.on{border-color:var(--accent); color:var(--accent)}
-#app{position:fixed; inset:0; display:flex; flex-direction:column; z-index:1}
-#topbar{display:flex; align-items:center; gap:8px; padding:10px 14px; background:var(--bg2); border-bottom:1px solid var(--edge); z-index:5}
-#topbar h1{flex:1; font-size:1.1em}
-#main{flex:1; overflow-y:auto; padding:12px; -webkit-overflow-scrolling:touch}
-#navbar{display:flex; background:var(--bg2); border-top:1px solid var(--edge); z-index:5}
-#navbar button{flex:1; border:none; border-radius:0; background:transparent; padding:11px 4px; font-variant:small-caps; letter-spacing:.05em; font-size:.86em; color:var(--ink-dim); border-top:2px solid transparent}
-#navbar button.on{color:var(--accent); border-top-color:var(--accent); background:var(--panel)}
-.grid2{display:grid; grid-template-columns:1fr 1fr; gap:8px}
-.grid3{display:grid; grid-template-columns:repeat(3,1fr); gap:8px}
-.statbox{background:var(--panel2); border:1px solid var(--edge); border-radius:12px; padding:8px; text-align:center}
-.statbox b{font-size:1.35em; display:block}
-.statbox .dim{font-size:.72em; font-variant:small-caps}
-.hpbar{height:14px; background:var(--bg2); border:1px solid var(--edge); border-radius:8px; overflow:hidden; position:relative}
-.hpbar>div{height:100%; background:linear-gradient(90deg,var(--accent2),var(--accent)); transition:width .4s}
-.hpbar.low>div{background:linear-gradient(90deg,#7a2a22,var(--danger))}
-.hpbar span{position:absolute; inset:0; text-align:center; font-size:.72em; line-height:14px; color:#fff; text-shadow:0 1px 2px #000}
-.list>div{display:flex; align-items:center; gap:8px; padding:10px 6px; border-bottom:1px solid var(--edge)}
-.list>div:last-child{border:none}
-.pick{border:1px solid var(--edge); border-radius:12px; padding:10px; background:var(--panel); cursor:pointer}
-.pick.on{border-color:var(--accent); box-shadow:0 0 0 1px var(--accent)}
-.pick b{display:block} .pick .small{color:var(--ink-dim)}
-.emblem{width:56px; height:56px; border-radius:50%; background:radial-gradient(circle at 35% 30%, var(--panel2), var(--bg2)); border:2px solid var(--accent2); display:flex; align-items:center; justify-content:center; font-size:1.7em; flex-shrink:0}
-/* dice overlay */
-#diceLayer{position:fixed; inset:0; z-index:50; pointer-events:none; display:none; align-items:center; justify-content:center; background:radial-gradient(circle at 50% 45%, rgba(0,0,0,.55), rgba(0,0,0,.8))}
-.dice3d{width:110px; height:110px; position:relative; transform-style:preserve-3d; animation:tumble .9s cubic-bezier(.2,.7,.3,1) forwards}
-@keyframes tumble{0%{transform:rotateX(0) rotateY(0) rotateZ(0) scale(.4)} 60%{transform:rotateX(540deg) rotateY(720deg) rotateZ(180deg) scale(1.1)} 100%{transform:rotateX(720deg) rotateY(900deg) rotateZ(240deg) scale(1)}}
-.dface{position:absolute; inset:0; border-radius:18px; background:linear-gradient(135deg,var(--panel2),var(--bg2)); border:2px solid var(--dice); box-shadow:inset 0 0 25px rgba(0,0,0,.6), 0 0 30px color-mix(in srgb,var(--dice) 40%,transparent); display:flex; align-items:center; justify-content:center; font-size:2.4em; color:var(--dice)}
-.dface span{animation:spinface 1s linear infinite}
-@keyframes spinface{50%{filter:brightness(1.6)}}
-#diceResult{position:absolute; top:62%; text-align:center; font-size:2.2em; color:var(--ink); text-shadow:0 2px 12px #000; opacity:0; animation:pop .5s .9s forwards}
-@keyframes pop{from{opacity:0; transform:scale(.6)} to{opacity:1; transform:scale(1)}}
-#diceLabel{position:absolute; top:18%; font-variant:small-caps; letter-spacing:.1em; color:var(--ink-dim); opacity:0; animation:pop .4s .1s forwards}
-.fx{position:fixed; inset:0; pointer-events:none}
-@keyframes fxFire{0%{opacity:0}20%{opacity:1}100%{opacity:0; background:radial-gradient(circle at 50% 50%, rgba(255,160,40,.55), transparent 65%)}}
-@keyframes fxDark{0%{opacity:0}30%{opacity:1}100%{opacity:0; background:radial-gradient(circle at 50% 50%, rgba(20,0,0,.75), transparent 70%)}}
-@keyframes fxGold{0%{opacity:0}25%{opacity:1}100%{opacity:0; background:radial-gradient(circle at 50% 50%, rgba(255,215,120,.5), transparent 60%)}}
-@keyframes fxBlood{0%{opacity:0}25%{opacity:1}100%{opacity:0; background:radial-gradient(circle at 50% 50%, rgba(180,20,20,.55), transparent 65%)}}
-@keyframes fxHoly{0%{opacity:0}25%{opacity:1}100%{opacity:0; background:radial-gradient(circle at 50% 50%, rgba(255,255,230,.6), transparent 55%)}}
-#toast{position:fixed; left:50%; bottom:76px; transform:translateX(-50%); background:var(--panel2); border:1px solid var(--accent); border-radius:12px; padding:10px 18px; z-index:60; opacity:0; transition:opacity .3s; pointer-events:none; max-width:86%; text-align:center}
-.modal{position:fixed; inset:0; z-index:40; background:rgba(0,0,0,.6); display:flex; align-items:flex-end; justify-content:center}
-.modal>div{background:var(--panel); border:1px solid var(--edge); border-radius:18px 18px 0 0; width:100%; max-height:85%; overflow-y:auto; padding:16px; animation:slideup .25s}
-@keyframes slideup{from{transform:translateY(40px); opacity:0}}
-.d20{color:var(--accent); font-weight:bold}
-.init-row{display:flex; align-items:center; gap:6px; padding:8px 6px; border-bottom:1px solid var(--edge)}
-.init-row.active{background:var(--panel2); border-left:3px solid var(--accent)}
-.hpchip{padding:2px 8px; border-radius:12px; font-size:.82em}
+:root{--bg:#0e0b14;--panel:#171320;--card:#1e1828;--edge:#2e2540;--text:#e8e2f0;
+--dim:#8f86a3;--accent:#c9a227;--accent2:#7c5cd6;--danger:#d64545;--ok:#3fae6a}
+body[data-theme="elven"]{--bg:#0a1410;--panel:#10201a;--card:#152a22;--edge:#244437;
+--text:#e4f0e8;--dim:#7fa38f;--accent:#5cbf7a;--accent2:#3d8f6e;--ok:#5cbf7a}
+body[data-theme="abyssal"]{--bg:#140a0a;--panel:#241010;--card:#2c1515;--edge:#4a2222;
+--text:#f0e4e0;--dim:#a38480;--accent:#e06a3a;--accent2:#a83a2a;--ok:#c9822e}
+*{box-sizing:border-box;margin:0;padding:0;font-family:Georgia,serif}
+body{background:var(--bg);color:var(--text);font-size:16px}
+h3{color:var(--accent);font-size:1em;margin-bottom:6px}
+button{background:var(--card);color:var(--text);border:1px solid var(--edge);
+border-radius:10px;padding:10px 12px;font-size:.95em;cursor:pointer}
+button.pri{background:linear-gradient(160deg,var(--accent),var(--accent2));
+color:#141018;font-weight:bold;border:none}
+button.ghost{background:none;border-color:transparent;color:var(--dim)}
+button.on{border-color:var(--accent);color:var(--accent)}
+input,textarea{width:100%;background:var(--panel);border:1px solid var(--edge);
+color:var(--text);border-radius:10px;padding:10px;font-size:1em}
+#app{max-width:520px;margin:0 auto;min-height:100vh;display:flex;flex-direction:column}
+#topbar{display:flex;align-items:center;gap:10px;padding:14px 14px 8px}
+#topbar h1{flex:1;font-size:1.25em}
+#main{flex:1;padding:0 14px 90px}
+#navbar{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;
+max-width:520px;display:flex;gap:4px;padding:8px;background:var(--panel);
+border-top:1px solid var(--edge)}
+#navbar button{flex:1;font-size:.85em;padding:10px 2px}
+.card{background:var(--card);border:1px solid var(--edge);border-radius:14px;
+padding:14px;margin-bottom:12px}
+.col{display:flex;flex-direction:column;gap:8px}
+.row{display:flex;gap:8px;align-items:center}
+.row.wrap{flex-wrap:wrap}
+.grow{flex:1}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.small{font-size:.85em}
+.dim{color:var(--dim)}
+.pick{background:var(--panel);border:1.5px solid var(--edge);border-radius:12px;
+padding:10px;cursor:pointer}
+.pick.on{border-color:var(--accent)}
+.statbox{background:var(--panel);border:1px solid var(--edge);border-radius:12px;
+padding:10px 6px;text-align:center;cursor:pointer}
+.statbox b{font-size:1.3em;display:block}
+.statbox span{font-size:.7em;color:var(--dim)}
+.hpbar{height:26px;background:var(--panel);border:1px solid var(--edge);
+border-radius:13px;overflow:hidden;position:relative;margin:8px 0}
+.hpbar div{height:100%;background:linear-gradient(90deg,var(--accent),var(--ok))}
+.hpbar.low div{background:var(--danger)}
+.hpbar span{position:absolute;inset:0;display:flex;align-items:center;
+justify-content:center;font-size:.8em;font-weight:bold;color:#fff;text-shadow:0 1px 2px #000}
+.tag{display:inline-block;background:var(--panel);border:1px solid var(--edge);
+border-radius:999px;padding:4px 10px;font-size:.8em;cursor:pointer;margin:2px}
+.tag.on{border-color:var(--accent);color:var(--accent)}
+.cond{display:inline-block;padding:4px 10px;margin:3px;border-radius:999px;
+border:1px solid var(--edge);font-size:.78em;cursor:pointer;background:var(--panel)}
+.cond.on{background:var(--danger);color:#fff;border-color:var(--danger)}
+.list div{padding:7px 4px;border-bottom:1px solid var(--edge);cursor:pointer}
+.list div:last-child{border-bottom:none}
+.irow{display:flex;gap:8px;align-items:center;background:var(--card);
+border:1px solid var(--edge);border-radius:12px;padding:8px;margin-bottom:6px}
+.irow.act{border-color:var(--accent)}
+#modalWrap{position:fixed;inset:0;background:rgba(0,0,0,.7);display:none;
+align-items:flex-end;z-index:50}
+#modalWrap.open{display:flex}
+#modalBox{background:var(--card);border-radius:18px 18px 0 0;padding:18px;
+width:100%;max-width:520px;max-height:80vh;overflow-y:auto;margin:0 auto}
+#toast{position:fixed;top:14px;left:50%;transform:translateX(-50%) translateY(-80px);
+background:var(--accent);color:#141018;padding:10px 18px;border-radius:999px;
+font-weight:bold;z-index:99;transition:.3s}
+#toast.show{transform:translateX(-50%) translateY(0)}
+#rollOv{position:fixed;inset:0;background:rgba(0,0,0,.85);display:none;
+flex-direction:column;align-items:center;justify-content:center;z-index:80}
+#rollOv.show{display:flex}
+#rollBig{font-size:4em;font-weight:bold;color:var(--accent)}
+#rollLbl{color:var(--dim);margin-bottom:10px;text-align:center;padding:0 20px}
 </style>
 </head>
-<body data-theme="grimoire">
+<body>
 <div id="app"></div>
-<div id="diceLayer"><div id="diceLabel"></div><div class="dice3d" id="diceCube"><div class="dface" style="transform:translateZ(55px)"><span id="faceGlyph">✦</span></div></div><div id="diceResult"></div></div>
+<div id="modalWrap" onclick="if(event.target===this)closeModal()"><div id="modalBox"></div></div>
 <div id="toast"></div>
+<div id="rollOv"><div id="rollLbl"></div><div id="rollBig"></div></div>
 <script>
-/* ============================== SRD CORE DATA (subset; extend via Content Packs) ============================== */
-const SKILLS={athletics:"STR",acrobatics:"DEX",sleight_of_hand:"DEX",stealth:"DEX",arcana:"INT",history:"INT",investigation:"INT",nature:"INT",religion:"INT",animal_handling:"WIS",insight:"WIS",medicine:"WIS",perception:"WIS",survival:"WIS",deception:"CHA",intimidation:"CHA",performance:"CHA",persuasion:"CHA"};
-const ABB={STR:"Strength",DEX:"Dexterity",CON:"Constitution",INT:"Intelligence",WIS:"Wisdom",CHA:"Charisma"};
-const CLASSES={
- barbarian:{name:"Barbarian",hd:12,saves:["STR","CON"],emblem:"🪓",spells:false,desc:"A fierce warrior of primal rage.",features:["Rage: bonus damage & resistance to bludgeoning/piercing/slashing while raging (2/day at level 1).","Unarmored Defense: AC = 10 + DEX mod + CON mod when not armored."]},
- bard:{name:"Bard",hd:8,saves:["DEX","CHA"],emblem:"🎻",spells:true,cast:"CHA",desc:"An inspiring magician whose words bend reality.",features:["Bardic Inspiration: give an ally a d6 to add to a roll (CHA mod/day, min 1).","Spellcasting: CHA-based; ritual casting known."]},
- cleric:{name:"Cleric",hd:8,saves:["WIS","CHA"],emblem:"☦",spells:true,cast:"WIS",desc:"A divine conduit wielding the power of a deity.",features:["Spellcasting: WIS-based; prepare spells from the cleric list after each long rest.","Channel Divinity comes at level 2; Divine Domain chosen at level 1."]},
- druid:{name:"Druid",hd:8,saves:["INT","WIS"],emblem:"🌿",spells:true,cast:"WIS",desc:"A guardian of nature who commands wild magic.",features:["Druidic: you know the secret Druidic language.","Spellcasting: WIS-based; prepare from the druid list after each long rest."]},
- fighter:{name:"Fighter",hd:10,saves:["STR","CON"],emblem:"⚔",spells:false,desc:"A master of weapons, armor, and tactics.",features:["Fighting Style: pick a combat specialty (+1 to archery, dueling +2 dmg, etc.).","Second Wind: bonus action, regain 1d10 + fighter level HP (1/short rest)."]},
- monk:{name:"Monk",hd:8,saves:["STR","DEX"],emblem:"👊",spells:false,desc:"A martial artist channeling inner ki.",features:["Unarmored Defense: AC = 10 + DEX mod + WIS mod.","Martial Arts: d4 unarmed strikes; bonus-action unarmed attack after attacking."]},
- paladin:{name:"Paladin",hd:10,saves:["WIS","CHA"],emblem:"🛡",spells:true,cast:"CHA",desc:"A holy warrior bound by a sacred oath.",features:["Divine Sense: detect celestials/fiends/undead (1 + CHA mod)/long rest.","Lay on Hands: heal pool of 5 HP per paladin level."]},
- ranger:{name:"Ranger",hd:10,saves:["STR","DEX"],emblem:"🏹",spells:false,desc:"A wilderness hunter with a favored enemy.",features:["Favored Enemy: advantage on Survival tracks, and Intelligence checks to recall lore about, chosen enemy type.","Natural Explorer: expertise in chosen favored terrain."]},
- rogue:{name:"Rogue",hd:8,saves:["DEX","INT"],emblem:"🗡",spells:false,desc:"A skillful trickster who strikes from shadow.",features:["Sneak Attack: +1d6 extra damage with advantage or an adjacent ally.","Thieves' Cant: secret code spoken through seemingly normal talk."]},
- sorcerer:{name:"Sorcerer",hd:6,saves:["CON","CHA"],emblem:"✨",spells:true,cast:"CHA",desc:"A spellcaster whose magic flows from innate bloodline.",features:["Sorcerous Origin: pick a bloodline that grants unique powers.","Spellcasting: CHA-based; Font of Magic and Metamagic come later."]},
- warlock:{name:"Warlock",hd:8,saves:["WIS","CHA"],emblem:"👁",spells:true,cast:"CHA",desc:"A bargain-seeker granted power by an otherworldly patron.",features:["Otherworldly Patron: choose a patron entity.","Pact Magic: CHA-based; few slots but all cast at highest level, restored on short rest."]},
- wizard:{name:"Wizard",hd:6,saves:["INT","WIS"],emblem:"📖",spells:true,cast:"INT",desc:"A scholar of the arcane arts and master of spells.",features:["Spellcasting: INT-based; prepare spells from your spellbook after a long rest.","Arcane Recovery: regain spell slots on a short rest (1/long rest)."]}
-};
-const SPECIES={
- human:{name:"Human",emblem:"🧑",desc:"Versatile and ambitious; +1 to all ability scores.",asi:{all:1},traits:["+1 to every ability score","One extra skill proficiency of choice"]},
- elf:{name:"Elf",emblem:"🧝",desc:"Graceful and long-lived; keen senses and magic affinity.",asi:{DEX:2},traits:["Darkvision 60 ft.","Keen Senses: proficient in Perception","Fey Ancestry: advantage vs. being charmed","Trance: 4-hour meditation instead of sleep"]},
- dwarf:{name:"Dwarf",emblem:"🧔",desc:"Stout kin of stone; hardy and masterful craftsmen.",asi:{CON:2},traits:["Darkvision 60 ft.","Dwarven Resilience: advantage vs. poison saves","Stonecunning: double proficiency on stonework checks","Speed 25 ft. regardless of armor"]},
- halfling:{name:"Halfling",emblem:"🍀",desc:"Small, lucky, and cheerfully brave.",asi:{DEX:2},traits:["Lucky: reroll natural 1s on attack/check/save","Brave: advantage vs. being frightened","Nimbleness: move through space of larger creatures"]},
- dragonborn:{name:"Dragonborn",emblem:"🐉",desc:"Draconic heritage; breath weapon and elemental resistance.",asi:{STR:2,CHA:1},traits:["Breath Weapon: 2d6 elemental damage in a cone (save half)","Damage Resistance matching draconic ancestry"]},
- gnome:{name:"Gnome",emblem:"🧿",desc:"Inventive smallfolk brimming with curiosity.",asi:{INT:2},traits:["Darkvision 60 ft.","Gnome Cunning: advantage on INT/WIS/CHA saves vs. magic"]},
- half_elf:{name:"Half-Elf",emblem:"🎭",desc:"Caught between two worlds; adaptable and charming.",asi:{CHA:2},traits:["Darkvision 60 ft.","+1 to two other ability scores","Skill Versatility: two extra skills","Advantage vs. being charmed; can't be put to sleep by magic"]},
- half_orc:{name:"Half-Orc",emblem:"🪖",desc:"Relentless strength and savage endurance.",asi:{STR:2,CON:1},traits:["Darkvision 60 ft.","Savage Attacks: extra die on melee crits","Relentless Endurance: drop to 1 HP instead of 0 (1/long rest)"]},
- tiefling:{name:"Tiefling",emblem:"😈",desc:"Infernal bloodline; resistant to fire and hellish charm.",asi:{CHA:2,INT:1},traits:["Darkvision 60 ft.","Hellish Resistance: fire damage resistance","Infernal Legacy: know the Thaumaturgy cantrip"]}
-};
-const BACKGROUNDS={
- acolyte:{name:"Acolyte",desc:"A devoted servant of a temple or deity.",skills:["insight","religion"],feat:"Shelter of the Faithful: receive free healing and care at temples of your faith."},
- criminal:{name:"Criminal",desc:"A life of theft, smuggling, or worse.",skills:["deception","stealth"],feat:"Criminal Contact: reliable access to a criminal network."},
- folk_hero:{name:"Folk Hero",desc:"A humble origin and a legendary deed.",skills:["animal_handling","survival"],feat:"Rustic Hospitality: common folk shelter and hide you."},
- noble:{name:"Noble",desc:"Born to privilege, pedigree, and politics.",skills:["history","persuasion"],feat:"Position of Privilege: welcomed warmly by high society."},
- sage:{name:"Sage",desc:"A lifetime spent in research and study.",skills:["arcana","history"],feat:"Researcher: always know where to find a piece of lore."},
- soldier:{name:"Soldier",desc:"Trained in a militia, army, or mercenary band.",skills:["athletics","intimidation"],feat:"Military Rank: authority over common soldiers."}
-};
-const SPELLS=[
- {n:"Fire Bolt",l:0,c:"wizard,sorcerer",d:"Ranged spell attack, 1d10 fire damage. 120 ft."},
- {n:"Sacred Flame",l:0,c:"cleric",d:"DEX save or 1d8 radiant damage. 60 ft."},
- {n:"Eldritch Blast",l:0,c:"warlock",d:"Ranged spell attack, 1d10 force damage. 120 ft."},
- {n:"Magic Missile",l:1,c:"wizard,sorcerer",d:"3 darts, each 1d4+1 force, auto-hit. 120 ft."},
- {n:"Cure Wounds",l:1,c:"cleric,druid,bard,paladin",d:"Heal 1d8 + spell mod HP by touch."},
- {n:"Healing Word",l:1,c:"cleric,druid,bard",d:"Bonus action; heal 1d4 + mod at 60 ft."},
- {n:"Shield",l:1,c:"wizard,sorcerer",d:"Reaction: +5 AC until your next turn."},
- {n:"Bless",l:1,c:"cleric,paladin",d:"Up to 3 creatures add 1d4 to attacks and saves. 1 min."},
- {n:"Bane",l:1,c:"cleric,bard",d:"Up to 3 enemies subtract 1d4 from attacks and saves. CHA save."},
- {n:"Sleep",l:1,c:"wizard,sorcerer,bard",d:"5d8 HP of creatures fall unconscious. WIS-relevant, no save."},
- {n:"Hideous Laughter",l:1,c:"wizard,bard",d:"Target falls prone laughing. WIS save. 1 min."},
- {n:"Detect Magic",l:1,c:"all",d:"Ritual. Sense magic auras within 30 ft."},
- {n:"Faerie Fire",l:1,c:"druid,bard",d:"DEX save; highlighted targets grant advantage. 1 min."},
- {n:"Thunderwave",l:1,c:"wizard,druid,bard,sorcerer",d:"15-ft cube; CON save or 2d8 thunder + pushed 10 ft."},
- {n:"Charm Person",l:1,c:"all",d:"WIS save; target regards you as friendly. 1 hr."},
- {n:"Invisibility",l:2,c:"wizard,sorcerer,bard,warlock",d:"Target becomes invisible. 1 hr, breaks on attack."},
- {n:"Misty Step",l:2,c:"wizard,sorcerer,warlock",d:"Bonus action: teleport 30 ft. to seen spot."},
- {n:"Hold Person",l:2,c:"cleric,druid,bard,sorcerer,warlock",d:"WIS save; humanoid paralyzed. 1 min."},
- {n:"Spiritual Weapon",l:2,c:"cleric",d:"Spectral weapon, bonus action attacks, 1d8+mod force."},
- {n:"Web",l:2,c:"wizard,sorcerer",d:"20-ft sphere of webs; DEX save or restrained."},
- {n:"Scorching Ray",l:2,c:"wizard,sorcerer",d:"3 rays, each 2d6 fire on hit."},
- {n:"Lesser Restoration",l:2,c:"cleric,druid,bard,paladin",d:"Cure one disease or one blinded/deafened/paralyzed/poisoned condition."},
- {n:"Fireball",l:3,c:"wizard,sorcerer",d:"20-ft sphere; DEX save or 8d6 fire (half on success)."},
- {n:"Counterspell",l:3,c:"wizard,sorcerer,warlock",d:"Reaction: interrupt a spell of 3rd level or lower."},
- {n:"Revivify",l:3,c:"cleric,druid,paladin",d:"Restore a creature dead <1 minute with 1 HP. 300 gp diamond."},
- {n:"Fly",l:3,c:"wizard,sorcerer,warlock",d:"Target gains 60-ft flying speed. 10 min."},
- {n:"Haste",l:3,c:"wizard,sorcerer",d:"Target doubled speed, +2 AC, extra action. WIS save on end."},
- {n:"Spirit Guardians",l:3,c:"cleric",d:"Spirits deal 3d8 radiant in 15-ft aura; WIS save half + slowed."},
- {n:"Animate Dead",l:3,c:"cleric,wizard",d:"Raise a skeleton or zombie servant. 24 hr."},
- {n:"Polymorph",l:4,c:"wizard,druid,bard,sorcerer",d:"Transform a creature into a beast of equal or lower CR. WIS save."},
- {n:"Greater Invisibility",l:4,c:"wizard,sorcerer,bard",d:"Invisible even when attacking. 1 min."},
- {n:"Wall of Fire",l:4,c:"druid,wizard,sorcerer",d:"Wall deals 5d8 fire to those who cross or start near it. DEX save."},
- {n:"Dimension Door",l:4,c:"wizard,sorcerer,warlock,bard",d:"Teleport you + one willing creature up to 500 ft."},
- {n:"Cone of Cold",l:5,c:"wizard,druid,sorcerer",d:"60-ft cone; CON save or 8d8 cold (half on success)."},
- {n:"Greater Restoration",l:5,c:"cleric,druid,bard,paladin",d:"End one charm, petrify, curse, exhaustion, or 0-HP condition. 100 gp."},
- {n:"Raise Dead",l:5,c:"cleric,paladin",d:"Return a corpse dead <10 days to life with 1 HP. 500 gp."}
-];
-const MONSTERS=[
- {n:"Goblin",cr:"1/4",hp:7,ac:15,spd:"30 ft",stats:{STR:8,DEX:14,CON:10,INT:10,WIS:8,CHA:8},atks:[{n:"Scimitar",to:4,d:"1d6+2 slashing"}],xp:50},
- {n:"Wolf",cr:"1/4",hp:11,ac:13,spd:"40 ft",stats:{STR:12,DEX:15,CON:12,INT:3,WIS:12,CHA:6},atks:[{n:"Bite",to:4,d:"2d4+2 piercing, DC 11 STR save or prone"}],xp:50},
- {n:"Bandit",cr:"1/8",hp:11,ac:12,spd:"30 ft",stats:{STR:11,DEX:12,CON:12,INT:10,WIS:10,CHA:10},atks:[{n:"Scimitar",to:3,d:"1d6+1 slashing"}],xp:25},
- {n:"Skeleton",cr:"1/4",hp:13,ac:13,spd:"30 ft",stats:{STR:10,DEX:14,CON:15,INT:6,WIS:8,CHA:7},atks:[{n:"Shortsword",to:4,d:"1d6+2 piercing"}],xp:50},
- {n:"Zombie",cr:"1/4",hp:22,ac:8,spd:"20 ft",stats:{STR:13,DEX:6,CON:16,INT:3,WIS:6,CHA:5},atks:[{n:"Slam",to:3,d:"1d6+1 bludgeoning"}],xp:50},
- {n:"Orc",cr:"1/2",hp:15,ac:13,spd:"30 ft",stats:{STR:16,DEX:12,CON:16,INT:7,WIS:11,CHA:10},atks:[{n:"Greataxe",to:5,d:"1d12+3 slashing"}],xp:100},
- {n:"Ogre",cr:"1",hp:59,ac:11,spd:"40 ft",stats:{STR:19,DEX:8,CON:16,INT:5,WIS:7,CHA:7},atks:[{n:"Greatclub",to:6,d:"2d8+4 bludgeoning"}],xp:200},
- {n:"Hobgoblin",cr:"1/2",hp:11,ac:18,spd:"30 ft",stats:{STR:13,DEX:12,CON:12,INT:10,WIS:10,CHA:9},atks:[{n:"Longsword",to:3,d:"1d8+1 slashing"}],xp:100},
- {n:"Gnoll",cr:"1/2",hp:22,ac:15,spd:"30 ft",stats:{STR:14,DEX:12,CON:12,INT:6,WIS:10,CHA:7},atks:[{n:"Spear",to:4,d:"1d6+2 piercing"}],xp:100},
- {n:"Dire Wolf",cr:"1",hp:37,ac:14,spd:"50 ft",stats:{STR:17,DEX:15,CON:15,INT:3,WIS:12,CHA:7},atks:[{n:"Bite",to:5,d:"2d6+3 piercing, DC 13 STR save or prone"}],xp:200},
- {n:"Bugbear",cr:"1",hp:27,ac:16,spd:"30 ft",stats:{STR:15,DEX:14,CON:13,INT:8,WIS:11,CHA:9},atks:[{n:"Morningstar",to:4,d:"2d8+2 piercing, +2d6 if surprising"}],xp:200},
- {n:"Owlbear",cr:"3",hp:59,ac:13,spd:"40 ft",stats:{STR:20,DEX:12,CON:17,INT:3,WIS:12,CHA:7},atks:[{n:"Beak",to:7,d:"1d10+5 piercing"},{n:"Claws",to:7,d:"2d8+5 slashing"}], </div>`:""}`;
- if(B.method==="roll"){
-  window.pickRoll=i=>{
-   // assign selected roll value to next stat needing assignment via cycling
-   const KEYS=Object.keys(ABB);
-   const k=KEYS[B.nextStat||0];B.assign[k]=B.rollSets[i];B.assignedIdx.add(i);B.nextStat=((B.nextStat||0)+1)%6;drawBuild(document.getElementById("app"))};
+"use strict";
+
+/* ================= DATA ================= */
+var ABB={STR:"Strength",DEX:"Dexterity",CON:"Constitution",INT:"Intelligence",WIS:"Wisdom",CHA:"Charisma"};
+var AKEYS=["STR","DEX","CON","INT","WIS","CHA"];
+var SKILLS={acrobatics:"DEX",animal_handling:"WIS",arcana:"INT",athletics:"STR",
+deception:"CHA",history:"INT",insight:"WIS",intimidation:"CHA",investigation:"INT",
+medicine:"WIS",nature:"INT",perception:"WIS",performance:"CHA",persuasion:"CHA",
+religion:"INT",sleight_of_hand:"DEX",stealth:"DEX",survival:"WIS"};
+var CLASSES={
+fighter:{n:"Fighter",e:"#",hd:10,saves:"STR, CON",spells:0,cast:"STR",d:"Master of weapons"},
+barbarian:{n:"Barbarian",e:"%",hd:12,saves:"STR, CON",spells:0,cast:"STR",d:"Fury incarnate"},
+paladin:{n:"Paladin",e:"+",hd:10,saves:"WIS, CHA",spells:1,cast:"CHA",d:"Holy warrior"},
+ranger:{n:"Ranger",e:"/",hd:10,saves:"STR, DEX",spells:1,cast:"WIS",d:"Wilderness hunter"},
+rogue:{n:"Rogue",e:"|",hd:8,saves:"DEX, INT",spells:0,cast:"DEX",d:"Sneak and skill"},
+monk:{n:"Monk",e:"o",hd:8,saves:"STR, DEX",spells:0,cast:"WIS",d:"Ki martial artist"},
+wizard:{n:"Wizard",e:"B",hd:6,saves:"INT, WIS",spells:1,cast:"INT",d:"Arcane scholar"},
+sorcerer:{n:"Sorcerer",e:"*",hd:6,saves:"CON, CHA",spells:1,cast:"CHA",d:"Innate magic"},
+warlock:{n:"Warlock",e:"@",hd:8,saves:"WIS, CHA",spells:1,cast:"CHA",d:"Pact magic"},
+cleric:{n:"Cleric",e:"^",hd:8,saves:"WIS, CHA",spells:1,cast:"WIS",d:"Divine channeler"},
+druid:{n:"Druid",e:"v",hd:8,saves:"INT, WIS",spells:1,cast:"WIS",d:"Nature mage"},
+bard:{n:"Bard",e:"~",hd:8,saves:"DEX, CHA",spells:1,cast:"CHA",d:"Magic of words"}};
+var SPECIES={
+human:{n:"Human",d:"+1 to all scores",asi:{STR:1,DEX:1,CON:1,INT:1,WIS:1,CHA:1}},
+elf:{n:"Elf",d:"+2 DEX, darkvision",asi:{DEX:2}},
+dwarf:{n:"Dwarf",d:"+2 CON, hardy",asi:{CON:2}},
+halfling:{n:"Halfling",d:"+2 DEX, lucky",asi:{DEX:2}},
+dragonborn:{n:"Dragonborn",d:"+2 STR +1 CHA, breath",asi:{STR:2,CHA:1}},
+gnome:{n:"Gnome",d:"+2 INT, cunning",asi:{INT:2}},
+half_elf:{n:"Half-Elf",d:"+2 CHA, versatile",asi:{CHA:2}},
+half_orc:{n:"Half-Orc",d:"+2 STR +1 CON, relentless",asi:{STR:2,CON:1}},
+tiefling:{n:"Tiefling",d:"+2 CHA +1 INT, infernal",asi:{CHA:2,INT:1}}};
+var BACKGROUNDS={
+acolyte:{n:"Acolyte",d:"Temple servant",sk:["insight","religion"]},
+criminal:{n:"Criminal",d:"Outside the law",sk:["deception","stealth"]},
+folk_hero:{n:"Folk Hero",d:"Local legend",sk:["animal_handling","survival"]},
+noble:{n:"Noble",d:"Born to privilege",sk:["history","persuasion"]},
+sage:{n:"Sage",d:"Years of study",sk:["arcana","history"]},
+soldier:{n:"Soldier",d:"Militia trained",sk:["athletics","intimidation"]}};
+var SPELLS=[
+{n:"Magic Missile",c:"wizard,sorcerer",l:1,d:"3 force darts, auto-hit, 1d4+1 each"},
+{n:"Shield",c:"wizard,sorcerer",l:1,d:"+5 AC reaction"},
+{n:"Cure Wounds",c:"cleric,druid,bard,paladin,ranger",l:1,d:"Heal 1d8+mod, touch"},
+{n:"Healing Word",c:"cleric,druid,bard",l:1,d:"Heal 1d4+mod, range"},
+{n:"Bless",c:"cleric,paladin",l:1,d:"+1d4 to attacks and saves"},
+{n:"Burning Hands",c:"wizard,sorcerer",l:1,d:"Cone 3d6 fire, Dex half"},
+{n:"Charm Person",c:"bard,druid,sorcerer,warlock,wizard",l:1,d:"Friendly target, Wis save"},
+{n:"Sleep",c:"bard,sorcerer,wizard",l:1,d:"5d8 HP fall unconscious"},
+{n:"Detect Magic",c:"all",l:1,d:"Sense magic 30 ft"},
+{n:"Scorching Ray",c:"wizard,sorcerer",l:2,d:"3 rays, 2d6 fire each"},
+{n:"Invisibility",c:"bard,sorcerer,warlock,wizard",l:2,d:"Invisible 1 hour"},
+{n:"Hold Person",c:"bard,cleric,druid,sorcerer,warlock,wizard",l:2,d:"Paralyze humanoid"},
+{n:"Misty Step",c:"sorcerer,warlock,wizard",l:2,d:"Teleport 30 ft, bonus"},
+{n:"Suggestion",c:"bard,sorcerer,warlock,wizard",l:2,d:"Compel reasonable action"},
+{n:"Shatter",c:"bard,sorcerer,warlock,wizard",l:2,d:"3d8 thunder, Con half"},
+{n:"Fireball",c:"wizard,sorcerer",l:3,d:"8d6 fire, Dex half"},
+{n:"Counterspell",c:"sorcerer,warlock,wizard",l:3,d:"Interrupt a spell"},
+{n:"Fly",c:"sorcerer,warlock,wizard",l:3,d:"Fly 60 ft, 10 min"},
+{n:"Revivify",c:"cleric,druid,paladin,ranger",l:3,d:"Revive, dead under 1 min"},
+{n:"Spirit Guardians",c:"cleric",l:3,d:"3d8 radiant aura"},
+{n:"Polymorph",c:"bard,druid,sorcerer,wizard",l:4,d:"Turn into a beast"},
+{n:"Dimension Door",c:"bard,sorcerer,warlock,wizard",l:4,d:"Teleport in sight"},
+{n:"Greater Restoration",c:"bard,cleric,druid",l:4,d:"End condition"},
+{n:"Wall of Fire",c:"druid,sorcerer,wizard",l:4,d:"5d8 fire, Dex half"},
+{n:"Cone of Cold",c:"sorcerer,wizard",l:5,d:"8d8 cold, Con half"},
+{n:"Raise Dead",c:"cleric,paladin,bard",l:5,d:"Revive, dead under 10 days"},
+{n:"Disintegrate",c:"sorcerer,wizard",l:6,d:"10d6+40 force, Dex half"},
+{n:"Plane Shift",c:"cleric,druid,sorcerer,warlock,wizard",l:7,d:"Travel planes"},
+{n:"Teleport",c:"bard,sorcerer,wizard",l:7,d:"Travel the world"},
+{n:"Meteor Swarm",c:"sorcerer,wizard",l:9,d:"20d6 fire, Dex half"},
+{n:"Wish",c:"sorcerer,wizard",l:9,d:"Anything, once"}];
+var MONSTERS=[
+{n:"Goblin",cr:"1/4",xp:50,hp:7,ac:15,st:{STR:8,DEX:14,CON:10,INT:10,WIS:8,CHA:8},at:["Scimitar +4, 1d6+2"]},
+{n:"Bandit",cr:"1/8",xp:25,hp:11,ac:12,st:{STR:11,DEX:12,CON:12,INT:10,WIS:10,CHA:10},at:["Scimitar +3, 1d6+1"]},
+{n:"Skeleton",cr:"1/4",xp:50,hp:13,ac:13,st:{STR:10,DEX:14,CON:15,INT:6,WIS:8,CHA:5},at:["Shortsword +4, 1d6+2"]},
+{n:"Zombie",cr:"1/4",xp:50,hp:22,ac:8,st:{STR:13,DEX:6,CON:16,INT:3,WIS:6,CHA:5},at:["Slam +3, 1d6+1"]},
+{n:"Wolf",cr:"1/4",xp:50,hp:11,ac:13,st:{STR:12,DEX:15,CON:12,INT:3,WIS:12,CHA:6},at:["Bite +4, 2d4+2"]},
+{n:"Orc",cr:"1/2",xp:100,hp:15,ac:13,st:{STR:16,DEX:12,CON:16,INT:7,WIS:11,CHA:10},at:["Greataxe +5, 1d12+3"]},
+{n:"Hobgoblin",cr:"1/2",xp:100,hp:11,ac:18,st:{STR:13,DEX:12,CON:12,INT:10,WIS:10,CHA:9},at:["Longsword +3, 1d8+1"]},
+{n:"Giant Spider",cr:"1",xp:200,hp:26,ac:14,st:{STR:14,DEX:16,CON:12,INT:2,WIS:11,CHA:4},at:["Bite +5, 1d8+3","Web +5"]},
+{n:"Ogre",cr:"2",xp:450,hp:59,ac:11,st:{STR:19,DEX:8,CON:16,INT:5,WIS:7,CHA:7},at:["Greatclub +6, 2d8+4"]},
+{n:"Owlbear",cr:"3",xp:700,hp:59,ac:13,st:{STR:20,DEX:12,CON:17,INT:3,WIS:12,CHA:7},at:["Beak +7, 1d10+5","Claws +7, 2d8+5"]},
+{n:"Wight",cr:"3",xp:700,hp:45,ac:14,st:{STR:15,DEX:14,CON:16,INT:10,WIS:13,CHA:15},at:["Longsword +4, 1d8+2"]},
+{n:"Troll",cr:"5",xp:1800,hp:84,ac:15,st:{STR:18,DEX:13,CON:20,INT:7,WIS:9,CHA:7},at:["Claw +7, 2d6+4","Bite +7, 1d6+4"]},
+{n:"Vampire Spawn",cr:"5",xp:1800,hp:82,ac:15,st:{STR:16,DEX:16,CON:16,INT:11,WIS:10,CHA:12},at:["Bite +6, 1d6+3"]},
+{n:"Young Red Dragon",cr:"10",xp:5900,hp:178,ac:18,st:{STR:23,DEX:10,CON:21,INT:14,WIS:11,CHA:19},at:["Bite +10, 2d10+6","Breath 16d6"]},
+{n:"Lich",cr:"21",xp:33000,hp:135,ac:17,st:{STR:11,DEX:16,CON:16,INT:20,WIS:14,CHA:16},at:["Paralyzing Touch +12, 3d6"]}];
+var NAMES={f:["Bryn","Kael","Thora","Eldric","Mira","Fenwick","Isolde","Dain","Lyra","Oswin","Vesper","Garrick","Nym","Sera","Wren","Astrid"],
+l:["Ashdown","Emberfell","Thornwood","Greywake","Ironvale","Moonwhisper","Duskbane","Stormhelm","Blackbriar","Frosthold","Silvermoor"]};
+var ORACLE=["Yes, and...","Yes","Yes, but...","Unclear - ask again","No, but...","No","No, and..."];
+var CONDS=["Blinded","Charmed","Deafened","Frightened","Grappled","Invisible","Poisoned","Prone","Restrained","Stunned","Exhaustion"];
+var TABSETS={player:["Character","Inventory","Dice","Spells","Session"],
+dm:["Party","Character","Combat","Bestiary","Tools"],
+solo:["Character","Inventory","Dice","Spells","Oracle","Combat"]};
+
+/* ================= STATE ================= */
+var S={role:"player",theme:"grimoire",chars:[],activeChar:0,log:[],packs:[]};
+var route="home", TAB="Character", ADV="norm", UNDO=null, INIT=[], TURN=-1, BLD=null;
+function save(){try{localStorage.setItem("grimoire",JSON.stringify(S))}catch(e){}}
+function load(){try{var j=JSON.parse(localStorage.getItem("grimoire"));if(j)for(var k in j)S[k]=j[k]}catch(e){}}
+function $(i){return document.getElementById(i)}
+function C(){return S.chars[S.activeChar]||null}
+function esc(s){return String(s==null?"":s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;")}
+function md(v){return Math.floor((((+v)||10)-10)/2)}
+function sgn(v){return v>=0?"+"+v:String(v)}
+function tot(ch,k){var b=(+ch.stats[k])||10;var sp=SPECIES[ch.species];return b+((sp&&sp.asi[k])||0)}
+function prof(ch){return 2+Math.floor((((ch.level||1)-1)/4))}
+function calcAC(ch){return (CLASSES[ch.cls].hd>=10?16:14)+md(tot(ch,"DEX"))}
+function startHP(ch){return CLASSES[ch.cls].hd+md(tot(ch,"CON"))}
+function log(m){var t=new Date().toTimeString().slice(0,5);S.log.unshift(t+" - "+m);if(S.log.length>200)S.log.length=200;save()}
+function toast(m){var t=$("toast");t.textContent=m;t.className="show";clearTimeout(toast.t);toast.t=setTimeout(function(){t.className=""},2200)}
+function modal(h){$("modalBox").innerHTML=h;$("modalWrap").className="open"}
+function closeModal(){$("modalWrap").className=""}
+function rnd(a){return a[Math.floor(Math.random()*a.length)]}
+function die(s){return 1+Math.floor(Math.random()*s)}
+
+/* ================= DICE ================= */
+function roll(expr,label){
+ var total=0,parts=[],terms=String(expr).toLowerCase().replace(/\s+/g,"").match(/[+-]?[^+-]+/g)||[];
+ var i,t,m,num,sides,kh,keep,rolls,used,sum,j;
+ for(i=0;i<terms.length;i++){
+  t=terms[i];var neg=(t.charAt(0)==="-");t=t.replace(/^[+-]/,"");
+  m=t.match(/^(\d*)d(\d+)(kh|kl)?(\d*)$/);
+  if(m){
+   num=+(m[1]||1);sides=+m[2];kh=m[3];keep=+(m[4]||1);
+   rolls=[];for(j=0;j<num;j++)rolls.push(die(sides));
+   used=rolls.slice();
+   if(kh){used.sort(function(a,b){return b-a});used=used.slice(0,keep)}
+   sum=0;for(j=0;j<used.length;j++)sum+=used[j];
+   parts.push((neg?"-":"")+used.join("+"));
+   total+=(neg?-1:1)*sum;
+  }else if(/^\d+$/.test(t)){total+=(neg?-1:1)*(+t);parts.push((neg?"-":"")+t)}
  }
- window.pbAdj=(k,d)=>{
-  const v=B.draft[k]+d;if(v<8||v>15)return;
-  const cost={[9]:1,[10]:2,[11]:3,[12]:4,[13]:5,[14]:7,[15]:9};
-  const delta=d>0?(cost[v]-cost[v-1]):-((cost[v+1]??cost[v])-(cost[v]??cost[v+1])||1);
-  B.costUsed=(B.costUsed||0)+delta;if(B.costUsed<0||B.costUsed>27){B.costUsed-=delta;return}
-  B.draft[k]=v;drawBuild(document.getElementById("app"))};
+ var lab=(label||"Roll")+"  ["+expr+"]";
+ $("rollLbl").textContent=lab;
+ $("rollBig").textContent=total;
+ $("rollOv").className="show";
+ clearTimeout(roll.t);roll.t=setTimeout(function(){$("rollOv").className=""},1700);
+ log(lab+" = "+total);
 }
-function applyOptimum(){const ch=BUILDER.char,p=CLASSES[ch.cls].saves.includes("DEX")?"dex":"str";
- const P={barbarian:{STR:15,CON:14,DEX:13,WIS:12,CHA:10,INT:8},fighter:{STR:15,CON:14,DEX:13,WIS:12,CHA:10,INT:8},
-  paladin:{STR:15,CHA:14,CON:13,WIS:12,DEX:10,INT:8},ranger:{DEX:15,WIS:14,CON:13,STR:12,CHA:10,INT:8},
-  rogue:{DEX:15,INT:14,CON:13,CHA:12,WIS:10,STR:8},monk:{DEX:15,WIS:14,CON:13,STR:12,CHA:10,INT:8},
-  wizard:{INT:15,CON:14,DEX:13,WIS:12,CHA:10,STR:8},sorcerer:{CHA:15,CON:14,DEX:13,WIS:12,INT:10,STR:8},
-  warlock:{CHA:15,CON:14,DEX:13,WIS:12,INT:10,STR:8},cleric:{WIS:15,CON:14,STR:13,CHA:12,DEX:10,INT:8},
-  druid:{WIS:15,CON:14,DEX:13,INT:12,CHA:10,STR:8},bard:{CHA:15,DEX:14,CON:13,WIS:12,STR:10,INT:8}};
- BUILDER.assign=Object.assign({STR:10,DEX:10,CON:10,INT:10,WIS:10,CHA:10},P[ch.cls]);BUILDER.char.stats={...BUILDER.assign}}
-function applyStandard(){BUILDER.assign=[15,14,13,12,10,8];const KEYS=Object.keys(ABB);BUILDER.char.stats={...Object.fromEntries(KEYS.map((k,i)=>[k,[15,14,13,12,10,8][i]]))};toast("Array applied in default order — adjust on review")}
-function genName(){const f=p=>p[Math.floor(Math.random()*p.length)];BUILDER.char.name=f(NAME_P.first)+" "+f(NAME_P.last);drawBuild(document.getElementById("app"))}
-window.randFullConcept=()=>{const ch=BUILDER.char,f=a=>a[Math.floor(Math.random()*a.length)];
- ch.name=f(NAME_P.first)+" "+f(NAME_P.last);ch.species=f(Object.keys(SPECIES));ch.cls=f(Object.keys(CLASSES));ch.bg=f(Object.keys(BACKGROUNDS));applyOptimum();drawBuild(document.getElementById("app"))};
-function builderNext(){
- const B=BUILDER,ch=B.char;
- if(B.step===0){if(!("#nmInput").value.trim())return toast("Give your character a name");ch.name=("#nmInput").value.trim()}
- if(B.step===4){
-  if(!["optimum","standard"].includes(B.method)&&!ch._lockedStats)
-    { /* stats may still be defaults; if method chosen, commit */ }
-  if(B.method==="pointbuy")ch.stats={...B.draft};
-  if(B.method==="roll")ch.stats={...B.assignByRoll||ch.stats};
-  if(!ch.stats)ch.stats={...B.assign};
-  if(ch.name&&Object.values(ch.stats).every(v=>!v))return toast("Choose an ability score method first");
-  const cl=CLASSES[ch.cls];
-  ch.hpMax=calcStartingHP(ch);ch.hp=ch.hpMax;
-  const st=slotsFor(ch);if(st){ch.slotMax=st;ch.usedSlots=null}
-  // starting attacks by class
-  const atkMap={fighter:[{n:"Longsword",to:"STR",d1d8 slashing"},{n:"Longbow",to:"DEX",d:"1d8 piercing"}],
-   barbarian:[{n:"Greataxe",to:"STR",d:"1d12 slashing"}],paladin:[{n:"Longsword",to:"STR",d:"1d8 slashing"}],
-   ranger:[{n:"Shortbow",to:"DEX",d:"1d6 piercing"}],rogue:[{n:"Rapier",to:"DEX",d:"1d8 piercing"}],monk:[{n:"Unarmed Strike",to:"DEX",d:"1d4 bludgeoning"}]};
-  ch.attacks=atkMap[ch.cls]||[{n:"Quarterstaff",to:mod(ch.stats.STR)>=mod(ch.stats.DEX)?"STR":"DEX",d:"1d6 bludgeoning"}];}
- B.step++;
- if(B.step>5)return;
- drawBuild(document.getElementById("app"));}
-window.finishBuild=()=>{
- const ch=BUILDER.char;
- finalizeProf(ch);S.chars.push(ch);S.activeChar=S.chars.length-1;
- S.role=BUILDER.role==="player"?"player":(BUILDER.role==="dm"?"dm":(BUILDER.role==="solo"?"solo":"player"));
- save();BUILDER=null;route={screen:"app"};render();toast("Welcome, "+ch.name+"!")};
 
-/* ============================== MAIN APP ============================== */
-const TABSETS={
- player:["Character","Dice","Spells","Inventory","Session"],
- dm:["Party","Character","Combat","Bestiary","World","Copilot","Tools"],
- solo:["Character","Dice","Spells","Oracle","Combat","Session"]};
-let APP_TAB="Character";
-function drawApp(app){
- if(APP_TAB==="Character")APP_TAB="Party";
- const role=S.role, tabs=TABSETS[role]||TABSETS.player;
- const tab=route.tab&&!tabs.includes(route.tab)?tabs[0]:null;
- app.innerHTML=`
-  <div id="topbar"><h1>Grimoire · ${role==="dm"?"DM Screen":role}</h1>
-   <button class="ghost small" onclick="openSettings()">⚙</button></div>
-  <div id="main"></div>
-  <div id="navbar">{tabs.map(t=>`<button class="{t===(tab)?'on':''}" onclick="go('app','t′)">{t}')">t′)">{t}</button>`).join("")}</div>`;
- drawTab($("#main"), tab);}
-window.go=(screen,tab)=>{route={screen,tab};if(tab)APP_TAB=tab;render()};
-function drawTab(M,tab){}
-/* ---- generic character sheet renderer shared by player & DM party view ---- */
+/* ================= RENDER ================= */
+function go(r,t){route=r;if(t)TAB=t;render()}
+function render(){
+ save();document.body.dataset.theme=S.theme;
+ if(route==="home")drawHome();
+ else if(route==="build")drawBuild();
+ else drawApp();
+}
+function drawHome(){
+ var h="<div id='topbar'><h1>Grimoire</h1></div><div id='main'><div class='col'>";
+ h+="<div class='card'><h3>Your role</h3><div class='grid3'>";
+ var roles=[["player","Player"],["dm","DM"],["solo","Solo"]],i;
+ for(i=0;i<3;i++)h+="<div class='pick"+(S.role===roles[i][0]?" on":"")+
+  "' onclick=\"S.role='"+roles[i][0]+"';render()\"><b>"+roles[i][1]+"</b></div>";
+ h+="</div></div>";
+ h+="<button class='pri' onclick='startBuild()'>New Character</button>";
+ if(S.chars.length)h+="<button onclick='go(\"app\")'>Continue - "+esc(C()?C().name:"")+"</button>";
+ h+="<button onclick='go(\"app\",\"Session\")'>Session Log</button>";
+ h+="<button onclick='go(\"app\",\"Tools\")'>Settings and Data</button>";
+ h+="<div class='card small dim'>Data lives only on this device. Use Tools to back up.</div>";
+ $("app").innerHTML=h+"</div></div>";
+}
+
+/* ================= BUILDER ================= */
+function startBuild(){
+ BLD={step:0,draft:{STR:10,DEX:10,CON:10,INT:10,WIS:10,CHA:10},cost:0,rollSets:[],assigned:0,
+ ch:{name:"",species:"human",cls:"fighter",bg:"acolyte",level:1,
+ stats:{STR:15,DEX:14,CON:13,INT:12,WIS:10,CHA:8},hp:0,hpMax:0,tempHp:0,
+ inv:[{n:"Rations",q:5},{n:"Torch",q:2}],gp:15,atks:[],sk:[],conds:[],conc:"",insp:0,notes:""}};
+ route="build";render();
+}
+var STEPS=["Identity","Class","Species","Background","Scores","Review"];
+function drawBuild(){
+ var b=BLD,h="<div id='topbar'><button class='ghost' onclick='BLD=null;go(\"home\")'>&lt;</button><h1>"+STEPS[b.step]+"</h1><span class='dim small'>"+(b.step+1)+"/6</span></div><div id='main'><div class='col'>";
+ h+=buildStep();
+ h+="</div></div><div id='navbar'><button onclick='blBack()'>Back</button><button class='pri' style='flex:2' onclick='blNext()'>"+(b.step===5?"Begin Adventure":"Next")+"</button></div>";
+ $("app").innerHTML=h;
+}
+function blBack(){if(BLD.step>0){BLD.step--;render()}}
+function blNext(){
+ var b=BLD,c=b.ch;
+ if(b.step===0&&!c.name.trim()){toast("Name your character first");return}
+ if(b.step===4){
+  if(BLD.rollSets.length&&BLD.assigned<6){toast("Assign all rolled scores first");return}
+  c.hpMax=startHP(c);c.hp=c.hpMax;
+  var am={fighter:[["Longsword","STR","1d8"]],barbarian:[["Greataxe","STR","1d12"]],
+  paladin:[["Longsword","STR","1d8"]],ranger:[["Shortbow","DEX","1d6"]],
+  rogue:[["Rapier","DEX","1d8"]],monk:[["Unarmed","DEX","1d4"]]};
+  c.atks=(am[c.cls]||[["Quarterstaff",md(c.stats.STR)>=md(c.stats.DEX)?"STR":"DEX","1d6"]]).map(function(a){
+   return{n:a[0],to:a[1],d:a[2]};});
+  if(CLASSES[c.cls].spells)c.slots=slotsFor(c);
+ }
+ b.step++;
+ if(b.step>5){
+  S.chars.push(c);S.activeChar=S.chars.length-1;BLD=null;route="app";TAB="Character";
+  render();toast("Welcome, "+c.name+"!");
+ }else render();
+}
+function slotsFor(ch){
+ var lv=ch.level||1;
+ if(ch.cls==="warlock")return[lv<3?1:lv<5?2:lv<7?3:lv<9?4:5,0,0,0,0,0,0,0,0];
+ var full=[2,3,4,4,4,3,3,3,3,3,2],n=Math.min(full.length,Math.ceil(lv/2)),r=[],i;
+ for(i=0;i<9;i++)r.push(i<n?full[i]:0);return r;
+}
+function buildStep(){
+ var c=BLD.ch,h="",k,e;
+ if(BLD.step===0){
+  h="<div class='card col'><h3>Name</h3><input id='bnm' value='"+esc(c.name)+"' oninput='BLD.ch.name=this.value'>";
+  h+="<div class='row'><button class='grow' onclick='BLD.ch.name=rnd(NAMES.f)+\" \"+rnd(NAMES.l);render()'>Random name</button>";
+  h+="<button class='grow pri' onclick='randAll()'>Surprise me</button></div></div>";
+ }else if(BLD.step===1){
+  h="<div class='card small dim'>Class sets your hit dice, saves and magic.</div><div class='grid2'>";
+  for(k in CLASSES){e=CLASSES[k];
+   h+="<div class='pick"+(c.cls===k?" on":"")+"' onclick=\"BLD.ch.cls='"+k+"';optStats();render()\"><b>"+e.e+" "+e.n+"</b><div class='small dim'>"+e.d+" - d"+e.hd+" HP"+(e.spells?", caster":"")+"</div></div>";}
+  h+="</div>";
+ }else if(BLD.step===2){
+  h="<div class='grid2'>";
+  for(k in SPECIES){e=SPECIES[k];
+   h+="<div class='pick"+(c.species===k?" on":"")+"' onclick=\"BLD.ch.species='"+k+"';render()\"><b>"+e.n+"</b><div class='small dim'>"+e.d+"</div></div>";}
+  h+="</div>";
+ }else if(BLD.step===3){
+  for(k in BACKGROUNDS){e=BACKGROUNDS[k];
+   h+="<div class='pick"+(c.bg===k?" on":"")+"' onclick=\"BLD.ch.bg='"+k+"';BLD.ch.sk=BACKGROUNDS['"+k+"'].sk.slice();render()\"><b>"+e.n+"</b><div class='small dim'>"+e.d+" - "+e.sk.join(", ").replace(/_/g," ")+"</div></div>";}
+ }else if(BLD.step===4){
+  var cost={9:1,10:2,11:3,12:4,13:5,14:7,15:9};
+  h="<div class='card'><h3>Method</h3><div class='grid2'>";
+  h+="<div class='pick on' onclick='optStats();render()'><b>Recommended</b><div class='small dim'>Auto for your class</div></div>";
+  h+="<div class='pick' onclick='BLD.rollSets=[];BLD.assigned=0;BLD.draft={STR:10,DEX:10,CON:10,INT:10,WIS:10,CHA:10};render()'><b>Point Buy</b><div class='small dim'>Spend 27 points</div></div>";
+  h+="<div class='pick' onclick='rollSets()'><b>Roll 4d6</b><div class='small dim'>Roll six sets, tap in order</div></div>";
+  h+="</div></div>";
+  if(BLD.rollSets.length){
+   h+="<div class='card'><h3>Rolls left: "+(6-BLD.assigned)+"</h3>";
+   for(k=0;k<6;k++)h+="<button class='grow' style='margin:2px' onclick='pickRoll("+k+")'>"+BLD.rollSets[k]+"</button>";
+   h+="</div>";
+  }
+  if(BLD.cost>0||true){
+   h+="<div class='card'><h3>Points: "+(27-BLD.cost)+" / 27</h3>";
+   for(k=0;k<6;k++){var a=AKEYS[k];
+    h+="<div class='row'><b style='width:40px'>"+a+"</b><button onclick='pbAdj(\""+a+"\",-1)'>-</button><b style='width:30px;text-align:center'>"+BLD.draft[a]+"</b><button onclick='pbAdj(\""+a+"\",1)'>+</button></div>";
+   }
+   h+="</div>";
+  }
+  h+="<div class='grid3'>";
+  for(k=0;k<6;k++){var a2=AKEYS[k];
+   h+="<div class='statbox'><b>"+(BLD.rollSets.length&&BLD.assigned>k?BLD.ch.stats[a2]:BLD.draft[a2])+"</b><span>"+a2+"</span></div>";}
+  h+="</div>";
+ }else if(BLD.step===5){
+  var cl=CLASSES[c.cls],sp=SPECIES[c.species],bg=BACKGROUNDS[c.bg],hp=startHP(c);
+  h="<div class='card'><b>"+esc(c.name)+"</b><div class='small dim'>Level "+c.level+" - "+sp.n+" - "+cl.n+" - "+bg.n+"</div></div>";
+  h+="<div class='grid3'>";
+  for(k=0;k<6;k++){var a3=AKEYS[k];h+="<div class='statbox'><b>"+tot(c,a3)+"</b><span>"+a3+"</span></div>";}
+  h+="</div>";
+  h+="<div class='card small'>HP "+hp+" - AC "+calcAC(c)+" - Saves: "+cl.saves+" - Skills: "+(c.sk.length?c.sk.join(", ").replace(/_/g," "):"none")+"</div>";
+  h+="<button class='pri' onclick='blNext()'>Begin the adventure</button>";
+ }
+ return h;
+}
+function optStats(){
+ var P={fighter:{STR:15,DEX:13,CON:14,INT:8,WIS:12,CHA:10},
+ barbarian:{STR:15,DEX:13,CON:14,INT:8,WIS:12,CHA:10},
+ paladin:{STR:15,DEX:10,CON:13,INT:8,WIS:12,CHA:14},
+ ranger:{STR:12,DEX:15,CON:13,INT:8,WIS:14,CHA:10},
+ rogue:{STR:8,DEX:15,CON:13,INT:14,WIS:10,CHA:12},
+ monk:{STR:12,DEX:15,CON:13,INT:8,WIS:14,CHA:10},
+ wizard:{STR:8,DEX:13,CON:14,INT:15,WIS:12,CHA:10},
+ sorcerer:{STR:8,DEX:13,CON:14,INT:10,WIS:12,CHA:15},
+ warlock:{STR:8,DEX:13,CON:14,INT:10,WIS:12,CHA:15},
+ cleric:{STR:13,DEX:10,CON:14,INT:8,WIS:15,CHA:12},
+ druid:{STR:8,DEX:13,CON:14,INT:12,WIS:15,CHA:10},
+ bard:{STR:10,DEX:14,CON:13,INT:8,WIS:12,CHA:15}};
+ var p=P[BLD.ch.cls]||P.fighter,k;
+ for(k in p)BLD.ch.stats[k]=p[k];
+}
+function randAll(){
+ var ks=["human","elf","dwarf","halfling","dragonborn","gnome","half_elf","half_orc","tiefling"];
+ var cs=[];for(var k in CLASSES)cs.push(k);var bs=[];for(k in BACKGROUNDS)bs.push(k);
+ BLD.ch.name=rnd(NAMES.f)+" "+rnd(NAMES.l);
+ BLD.ch.species=rnd(ks);BLD.ch.cls=rnd(cs);BLD.ch.bg=rnd(bs);
+ BLD.ch.sk=BACKGROUNDS[BLD.ch.bg].sk.slice();
+ optStats();render();
+}
+function rollSets(){
+ BLD.rollSets=[];BLD.assigned=0;
+ for(var i=0;i<6;i++){
+  var r=[die(6),die(6),die(6),die(6)].sort(function(a,b){return b-a});
+  BLD.rollSets.push(r[0]+r[1]+r[2]+" ("+r.join(",")+" drop "+r[3]+")");
+ }
+ render();
+}
+function pickRoll(i){
+ var k=AKEYS[BLD.assigned];
+ BLD.ch.stats[k]=parseInt(BLD.rollSets[i]);BLD.assigned++;
+ if(BLD.assigned>=6){BLD.rollSets=[];}
+ render();
+}
+function pbAdj(k,d){
+ var cost={8:0,9:1,10:2,11:3,12:4,13:5,14:7,15:9};
+ var v=BLD.draft[k]+d;
+ if(v<8||v>15)return;
+ if(27-BLD.cost-(cost[v]-cost[BLD.draft[k]])<0)return;
+ BLD.cost+=cost[v]-cost[BLD.draft[k]];BLD.draft[k]=v;BLD.ch.stats[k]=v;render();
+}
+
+/* ================= MAIN APP ================= */
+function drawApp(){
+ var tabs=TABSETS[S.role],i,h="<div id='topbar'><h1>"+(S.role==="dm"?"DM Screen":S.role==="solo"?"Solo Quest":"Grimoire")+"</h1>";
+ h+="<button class='ghost' onclick='go(\"home\")'>Menu</button></div><div id='main'>";
+ h+=tabHTML(TAB);
+ h+="</div><div id='navbar'>";
+ for(i=0;i<tabs.length;i++)h+="<button class='"+(tabs[i]===TAB?"on":"")+"' onclick='go(\"app\",\""+tabs[i]+"\")'>"+tabs[i]+"</button>";
+ $("app").innerHTML=h+"</div>";
+}
+function tabHTML(t){
+ if((t==="Character"||t==="Spells"||t==="Inventory")&&!C())return "<div class='card dim'>No character yet.</div>";
+ if(t==="Character")return sheetHTML(C());
+ if(t==="Spells")return spellsHTML(C());
+ if(t==="Inventory")return invHTML(C());
+ if(t==="Dice")return diceHTML();
+ if(t==="Session")return sessHTML();
+ if(t==="Combat")return combatHTML();
+ if(t==="Bestiary")return bestHTML();
+ if(t==="Tools")return toolsHTML();
+ if(t==="Oracle")return oracleHTML();
+ if(t==="Party")return partyHTML();
+ return "";
+}
+
+/* ================= CHARACTER SHEET ================= */
 function sheetHTML(ch){
- const pc=profBon(ch),pb=n=>n>=0?"+"+n:n;
- return `<div class="col">
-  <div class="card">
-   <div class="row"><div class="emblem" style="font-size:1.8em">${esc(CLASSES[ch.cls]?.emblem||"✦")}</div>
-   <div class="grow"><b style="font-size:1.15em">${esc(ch.name)}</b>
-   <div class="dim small">Level ch.level{ch.level}ch.level{esc(CLASSES[ch.cls]?.name||ch.cls)} · AC calcAC(ch)⋅Prof+{calcAC(ch)} · Prof +calcAC(ch)⋅Prof+{pc}</div></div>
-   <button class="ghost" onclick="restMenu(${JSON.stringify(ch.id||S.chars.indexOf(ch)).replace(/"/g,'')})">💤</button></div>
-   <div class="hpbar ch.hp<=Math.max(1,ch.hpMax∗0.25)?′low′:′′"><divstyle="width:{ch.hp<=Math.max(1,ch.hpMax*0.25)?'low':''}"><div style="width:ch.hp<=Math.max(1,ch.hpMax∗0.25)?′low′:′′"><divstyle="width:{Math.max(,(ch.hp/ch.hpMax)*100)}%"></div><span>ch.hp/{ch.hp}/ch.hp/{ch.hpMax}${ch.tmp?"+"+ch.tmp+" temp":""}</span></div>
-   <div class="row" style="margin-top:8px">
-    <button onclick="adjHP(-1)">−</button><button class="grow" onclick="promptHP()">Set HP</button><button onclick="adjHP(1)">＋</button>
-    <button onclick="addTemp()">Temp HP</button></div></div>
-  <div class="grid3">${Object.keys(ABB).map(k=>{const t=statTotal(ch,k),m=mod(t);return `
-   <div class="statbox" onclick="quickCheck('k′,{k}',k′,{m})" style="cursor:pointer"><b>t</b><spanclass="dim">{t}</b><span class="dim">t</b><spanclass="dim">{k} ${pb(m)}</span></div>`}).join("")}</div>
-  <div class="row wrap"><span class="tag on" onclick="advCycle()" id="advTag">🎲 Adv: ${DICE_ADV==="norm"?"Normal":DICE_ADV==="adv"?"Advantage":"Disadvantage"}</span>
-   <span class="tag ch.insp?′on′:′′"onclick="toggleInsp()">✨Inspiration{ch.insp?'on':''}" onclick="toggleInsp()">✨ Inspirationch.insp?′on′:′′"onclick="toggleInsp()">✨Inspiration{ch.insp?"✓":""}</span></div>
-  <div class="card"><h3>Skills</h3><div class="list">${Object.entries(SKILLS).map(([id,ab])=>{
-    const prof=ch.profSkills?.includes(id),m=mod(statTotal(ch,ab)),bonus=m+(prof?pc:0);
-    return `<div onclick="rollSkill('id′,′{id}','id′,′{ab.slice(0,3).toUpperCase()}',bonus)"style="cursor:pointer;font−size:.88em;padding:5px6px"><spanstyle="width:14px;display:inline−block;color:{bonus})" style="cursor:pointer;font-size:.88em;padding:5px 6px"><span style="width:14px;display:inline-block;color:bonus)"style="cursor:pointer;font−size:.88em;padding:5px6px"><spanstyle="width:14px;display:inline−block;color:{prof?'var(--accent)':'var(--edge)'}">prof?′●′:′○′</span>{prof?'●':'○'}</span>prof?′●′:′○′</span>{id.replace(/_/g," ").replace(/\b\w/g,c=>c.toUpperCase())}<span class="dim"> (ab)</span><spanclass="rightgrowdim">{ab})</span><span class="right grow dim">ab)</span><spanclass="rightgrowdim">{pb(bonus)}</span></div>`}).join("")}</div>
-  <div class="small dim">Passive Perception: <b class="d20">${10+mod(statTotal(ch,"WIS"))+(ch.profSkills?.includes("perception")?pc:0)}</b></div></div>
-  ${CLASSES[ch.cls]?.spells?spellSection(ch):""}
-  <div class="card"><h3>Attacks</h3>{ch.attacks.map(a=>`<div class="list row" style="border-bottom:1px solid var(--edge)"><span class="grow">{a.n} <span class="dim small">{a.to==="STR"||a.to==="DEX"?("("+F(a.to)+")":"")}</span></span><button onclick="rollAttack('a.n.replace(/′/g,"")′,′{a.n.replace(/'/g,"")}','a.n.replace(/′/g,"")′,′{
-   typeof a.to==="number"?pb(a.to+pc):pb(mod(statTotal(ch,a.to))+pc)}','${a.d}')">⚔ Roll</button></div>`).join("")}
-  <button class="ghost grow" onclick="addAttack()">＋ Attack</button></div>
-  ${condChips(ch)}
-  <div class="card"><h3>Notes</h3><textarea rows="3" onchange="c().notes=this.value;save()">${esc(ch.notes)}</textarea></div>
- </div>`}
-window.$F=k=>k;/* helper for template safety */
-function condChips(ch){return `<div class="card"><h3>Conditions</h3><div class="row wrap">${
- ["Blinded","Charmed","Deafened","Frightened","Grappled","Invisible","Poisoned","Prone","Restrained","Stunned","Exhaustion"].map(cn=>{
-  const on=ch.conds?.includes(cn);return `<span class="tag on?′on′:′′"onclick="toggleCond(′{on?'on':''}" onclick="toggleCond('on?′on′:′′"onclick="toggleCond(′{cn}')">${cn}</span>`}).join("")}</div>
- {ch.concentration?`<div class="tag on" style="margin-top:6px">🎯 Concentrating:{esc(ch.concentration)} <span onclick="c().concentration=null;save();render()">✕</span></div>`:""}</div>`}
-window.toggleCond=cn=>{const ch=c();ch.conds=ch.conds||[];const i=ch.conds.indexOf(cn);i>=0?ch.conds.splice(i,1):ch.conds.push(cn);save();render()};
-window.toggleInsp=()=>{const ch=c();ch.insp=!ch.insp;save();render()};
-window.advCycle=()=>{DICE_ADV=DICE_ADV==="norm"?"adv":DICE_ADV==="adv"?"dis":"norm";render()};
-window.adjHP=d=>{const ch=c();d>0?heal(ch,1):damage(ch,1)};
-window.promptHP=()=>{const ch=c();openModal(`<h2>Set HP</h2><input type="number" id="hpSet" value="${ch.hp}"><button class="pri" onclick="(()=>{pushUndo('HP set',JSON.stringify({hp:c().hp,tmp:c().tmp}));c().hp=Math.max(0,Math.min(c().hpMax,+document.getElementById('hpSet').value));save();closeModal();render()})()">OK</button>`)};
-window.addTemp=()=>{const ch=c();openModal(`<h2>Temp HP</h2><input type="number" id="tpV" placeholder="amount"><button class="pri" onclick="(()=>{c().tmp=Math.max(0,c().tmp+ +document.getElementById('tpV').value||0);save();closeModal();render()})()">Add</button>`)};
-window.quickCheck=(k,m)=>{openModal(`<h2>${k} Check</h2><div class="grid3">
- <button onclick="closeModal();doCheck('k′,{k}',k′,{m},'norm')">Normal</button>
- <button onclick="closeModal();doCheck('k′,{k}',k′,{m},'adv')">Adv</button>
- <button onclick="closeModal();doCheck('k′,{k}',k′,{m},'dis')">Dis</button></div>
- <hr><h3>Saving Throw</h3><div class="grid3">
- <button onclick="closeModal();doSave('k′,{k}',k′,{m},'norm')">Normal</button>
- <button onclick="closeModal();doSave('k′,{k}',k′,{m},'adv')">Adv</button>
- <button onclick="closeModal();doSave('k′,{k}',k′,{m},'dis')">Dis</button></div>`)};
-window.doCheck=(k,m,mode)=>{const old=DICE_ADV;DICE_ADV=mode;rollDice(d20mode(),k+" check "+(m>=0?"+":"")+m);DICE_ADV=old};
-window.doSave=(k,m,mode)=>{const old=DICE_ADV;DICE_ADV=mode;rollDice(d20mode(),k+" save "+(m>=0?"+":"")+m);DICE_ADV=old};
-window.rollSkill=(id,ab,b)=>{rollDice(d20mode()+"+"+b,id.replace(/_/g," ")+" ("+ab+")")};
-window.rollAttack=(n,to,d)=>{rollDice("1d20"+to,n+" attack")};
-window.addAttack=()=>{openModal(`<h2>New Attack</h2><input id="aN" placeholder="Name"><input id="aD" placeholder="e.g. 1d8+3 slashing" style="margin-top:6px"><button class="pri" onclick="(()=>{c().attacks.push({n:document.getElementById('aN').value||'Attack',to:'STR',d:document.getElementById('aD').value});save();closeModal();render()})()">Add</button>`)};
-window.restMenu=idx=>{openModal(`<h2>Rest</h2><div class="grid2"><button onclick="(()=>{shortRest(c());closeModal()})()">🌙 Short Rest</button><button onclick="(()=>{longRest(c());closeModal()})()">☁ Long Rest</button></div>`)};
-/* ---- spells tab content ---- */
-function spellSection(ch){
- const cl=CLASSES[ch.cls],ability=cl.cast,sm=mod(statTotal(ch,ability)),dc=8+sm+profBon(ch);
- ch.slots=ch.slotMax||slotsFor(ch)||[];ch.usedSlots=ch.usedSlots||(ch.slots.map(()=>0));
- const list=SPELLS.filter(s=>s.c.split(",").some(x=>x===ch.cls||x==="all"));
- return `<div class="card"><h3>Spellcasting (${ability})</h3>
-  <div class="grid3"><div class="statbox"><b>dc</b><spanclass="dim">SpellDC</span></div><divclass="statbox"><b>{dc}</b><span class="dim">Spell DC</span></div><div class="statbox"><b>dc</b><spanclass="dim">SpellDC</span></div><divclass="statbox"><b>{sm>=0?"+":""}sm</b><spanclass="dim">Mod</span></div><divclass="statbox"><bclass="d20">{sm}</b><span class="dim">Mod</span></div><div class="statbox"><b class="d20">sm</b><spanclass="dim">Mod</span></div><divclass="statbox"><bclass="d20">{sm>=0?"+":""}${sm+profBon(ch)}</b><span class="dim">Attk</span></div></div>
-  <div class="row wrap" style="margin:8px 0">{ch.slots.map((n,i)=>`<span class="tag{(ch.usedSlots[i]||0)<n?'on':''}" onclick="useSlot(i)">Lv{i})">Lvi)">Lv{i+1}: n−(ch.usedSlots[i]∣∣0)/{n-(ch.usedSlots[i]||0)}/n−(ch.usedSlots[i]∣∣0)/{n}</span>`).join("")||'<span class="dim small">No slots yet.</span>'}</div>
-  <input id="spQ" placeholder="Search spells…" oninput="filterSpells(this.value)">
-  <div id="spList" class="list">${list.map(sp=>spellRow(sp,ch)).join("")}</div></div>`}
-function spellRow(sp,ch){return `<div onclick="castSpell('sp.n.replace(/′/g,"")′)"style="display:block;cursor:pointer"><b>{sp.n.replace(/'/g,"")}')" style="display:block;cursor:pointer"><b>sp.n.replace(/′/g,"")′)"style="display:block;cursor:pointer"><b>{esc(sp.n)}</b> <span class="dim small">Lvsp.l</span><divclass="smalldim">{sp.l}</span><div class="small dim">sp.l</span><divclass="smalldim">{esc(sp.d)}</div></div>`}
-window.filterSpells=q=>{const ch=c(),lq=q.toLowerCase();
- document.getElementById("spList").innerHTML=SPELLS.filter(s=>s.c.split(",").some(x=>x===ch.cls||x==="all")).filter(s=>s.n.toLowerCase().includes(lq)||String(s.l)===q).map(sp=>spellRow(sp,ch)).join("")};
-window.useSlot=i=>{const ch=c();const used=ch.usedSlots[i]||0;if(used>=ch.slots[i])return toast("No level-"+(i+1)+" slots left");
- openModal(`<h2>Spend Level i+1Slot</h2><pclass="dimsmall">Castaspelloflevel≤{i+1} Slot</h2><p class="dim small">Cast a spell of level ≤i+1Slot</h2><pclass="dimsmall">Castaspelloflevel≤{i+1}?</p><div class="grid2"><button class="pri" onclick="commitSlot(i)">Cast</button><buttononclick="restoreSlot({i})">Cast</button><button onclick="restoreSlot(i)">Cast</button><buttononclick="restoreSlot({i})" class="ghost">Restore slot</button></div>`)};
-window.commitSlot=i=>{c().usedSlots[i]=(c().usedSlots[i]||0)+1;save();closeModal();render()};
-window.restoreSlot=i=>{c().usedSlots[i]=Math.max(0,(c().usedSlots[i]||0)-1);save();closeModal();render()};
-window.castSpell=n=>{const sp=SPELLS.find(s=>s.n===n);if(!sp)return;
- rollDice(evalExpr.count||sp.l?"1d20":"1d20","Cast: "+n);
- if(/Cure|Heal/i.test(sp.n)){openModal(`<h2>n</h2><p>Healingperspelldescription.</p><buttonclass="pri"onclick="rollHeal(′{n}</h2><p>Healing per spell description.</p><button class="pri" onclick="rollHeal('n</h2><p>Healingperspelldescription.</p><buttonclass="pri"onclick="rollHeal(′{sp.l}')">Roll Heal Dice</button>`)}
- else pushLog(n+": cast")};
-window.rollHeal=l=>{closeModal();rollDice(("1d8").replace("1d8",(l===0?"1":"1")+"d8"),"Healing")};
-
-/* ============================== TAB DISPATCHERS ============================== */
-function drawTabReal(M,tab){
- if(!tab)tab=TABSETS[S.role][0];
- switch(tab){
-  case "Character": M.innerHTML=sheetHTML(c());break;
-  case "Party": drawParty(M);break;
-  case "Dice": drawFreeform(M);break;
-  case "Spells": case "Inventory": M.innerHTML="<div>"+sheetSub(M,tab)+"</div>";break;
-  case "Combat": drawCombat(M);break;
-  case "Bestiary": drawBestiary(M);break;
-  case "World": drawWorld(M);break;
-  case "Copilot": drawCopilot(M);break;
-  case "Tools": drawTools(M);break;
-  case "Oracle": drawOracle(M);break;
-  case "Session": drawSession(M);break;
- }}
-function sheetSub(M,kind){ // inventory / pure-spellbook listing under Character route
- if(kind==="Inventory"){const ch=c();return `<div class="card"><h3>Inventory</h3><div class="list">${ch.inventory.map(it=>`
-  <div><span class="grow">it.n×{it.n} ×it.n×{it.q}</span><button onclick="qty('esc(it.n)′,−1)">−</button><buttononclick="qty(′{esc(it.n)}',-1)">−</button><button onclick="qty('esc(it.n)′,−1)">−</button><buttononclick="qty(′{esc(it.n)}',1)">＋</button></div>`).join("")}</div>
-  <div class="row"><button class="grow ghost" onclick="addItem()">＋ Add item</button><span class="tag">💰 ${c().money.gp} gp</span></div></div>`}}
-window.qty=(n,d)=>{const ch=c(),it=ch.inventory.find(x=>x.n===n);it.q+=d;if(it.q<=0)ch.inventory.splice(ch.inventory.indexOf(it),1);save();drawApp(document.getElementById("app"))};
-window.addItem=()=>{openModal(`<h2>Add Item</h2><input id="itN" placeholder="Name"><input id="itQ" type="number" value="1" style="margin-top:6px"><button class="pri" onclick="(()=>{c().inventory.push({n:document.getElementById('itN').value,q:+document.getElementById('itQ').value||1});save();closeModal();render()})()">Add</button>`)};
-function drawParty(M){
- M.innerHTML=`<div class="col">${S.chars.map((ch,i)=>`
-  <div class="pick row" onclick="S.activeChar=${i};save();go('app','Character')">
-   <div class="emblem">${esc(CLASSES[ch.cls]?.emblem||"✦")}</div>
-   <div class="grow"><b>esc(ch.name)</b><divclass="smalldim">Lv{esc(ch.name)}</b><div class="small dim">Lvesc(ch.name)</b><divclass="smalldim">Lv{ch.level} ${CLASSES[ch.cls]?.name||ch.cls}</div></div>
-   <div class="statbox" style="padding:4px 8px"><b style="font-size:1em">Math.max(0,ch.hp)</b><spanclass="dim">/{Math.max(0,ch.hp)}</b><span class="dim">/Math.max(0,ch.hp)</b><spanclass="dim">/{ch.hpMax} HP</span></div></div>`).join("")}
- <div class="row"><button class="grow" onclick="startBuilder('player')">＋ New Character</button>
- <button class="grow ghost" onclick="exportOne()">📤 Export Active</button></div></div>`}
-window.exportOne=()=>dl(JSON.stringify(c()),c().name.toLowerCase().replace(/\s+/g,"-")+".json");
-function drawFreeform(M){
- M.innerHTML=`<div class="col card"><h3>Dice Roller</h3>
-  <div class="row wrap">{["1d20","2d20kh1","d100","4d6kh3"].concat([4,6,8,10,12,20].map(d=>"1d"+d)).map(e=>`<button class="pri" onclick="rollDice('{e==='2d20kh1'?'2d20kh1':e}')">${e}</button>`).join("")}</div>
-  <hr><input id="ffExpr" placeholder='e.g. 4d6kh3 + 2 or 2d10 + 1d6'><button class="pri" onclick="rollDice(document.getElementById('ffExpr').value,'Freeform '+document.getElementById('ffExpr').value,undefined)">ROLL</button></div>`;
- M.querySelector("#ffExpr").addEventListener("keydown",e=>e.key==="Enter"&&M.querySelector("#ffExpr+button").click())}
-
-/* ---- combat / initiative tracker ---- */
-let INIT=[]; // {name,hp,ac,init,active,isPC}
-function drawCombat(M){
- M.innerHTML=`<div class="col"><div class="row"><button class="pri grow" onclick="rollInit()">▶ Start Encounter</button>
-  <button onclick="endEncounter()">End</button></div>
-  <div id="initList">${INIT.map((r,i)=>initRow(r,i)).join("")}</div></div>`;
- window.initPrev||0;}
-function initRow(r,i){return `<div class="init-row ${INIT.length&&i===initTurnIdx?'active':''}">
- <input type="number" value="r.init"onchange="INIT[{r.init}" onchange="INIT[r.init"onchange="INIT[{i}].init=+this.value;sortInit()" style="width:52px;text-align:center;padding:4px">
- <div class="grow"><b>r.name</b><spanclass="dimsmall">AC{r.name}</b> <span class="dim small">ACr.name</b><spanclass="dimsmall">AC{r.ac}${r.mref&&!r.pc?" · "+esc(MONSTERS.find(m=>m.n===r.mref)?.cr||""):""}</span></div>
- {r.pc?"":`<div class="statbox" style="padding:2px 6px"><b style="font-size:.95em">{r.hp}</b><span class="dim">HP</span></div>`}
- <button onclick="combatHit(i,−1)">－</button><buttononclick="combatHit({i},-1)">－</button><button onclick="combatHit(i,−1)">－</button><buttononclick="combatHit({i},1)" ${r.pc?"disabled":""}>＋</button></div>`}
-let initTurnIdx=-1;
-function sortInit(){INIT.sort((a,b)=>b.init-a.init);drawApp(document.getElementById("app"))}
-window.rollInit=()=>{
- const adds=[];
- c()&&(adds.push({name:c().name,hp:c().hp,ac:calcAC(c()),init:evalExpr("1d20+"+mod(statTotal(c(),"DEX"))).total,pc:true}));
- openModal(`<h2>Add Combatants</h2><input id="cmN" list="mnames" placeholder="Monster name (blank = just PCs)">
- <datalist id="mnames">{MONSTERS.map(m=>`<option value="{m.n}">`).join("")}</datalist>
- <input id="cmCount" type="number" value="1" min="1" style="margin-top:6px;width:80px">
- <button class="pri" onclick="addMonsters()" style="margin-top:8px">Add & Begin Initiative</button>`);
- INIT=adds;};
-window.addMonsters=()=>{const n=("#cmN").value.trim(),cnt=+("#cmCount").value||1;
- if(n){const m=MONSTERS.find(x=>x.n.toLowerCase()===n.toLowerCase());
-  if(!m){toast("Unknown monster — add it via Bestiary or content pack");return}
-  for(let i=0;i<cnt;i++)INIT.push({name:m.n+(cnt>1?" "+(i+1):""),hp:m.hp,ac:m.ac,init:evalExpr("1d20+2").total,mref:m.n});
-  netBroadcast({t:"share",data:{encounterWarn:true}});}
- sortInit();initTurnIdx=0;closeModal();pushLog("Encounter begins!");drawApp(document.getElementById("app"))};
-window.combatHit=(i,d)=>{const r=INIT[i];r.hp+=d;if(r.hp>r.mhp)r.hp=r.mhp;
- if(r.hp<=0){pushLog(r.name+" falls!");INIT.splice(i,1);if(initTurnIdx>=i)initTurnIdx--}else pushUndo("Combatant HP changed",r.hp);
- save();drawApp(document.getElementById("app"))};
-window.endEncounter=()=>{INIT=[];initTurnIdx=-1;pushLog("Encounter ended");render()};
-window.initNext=function(){
- if(!INIT.length)return;initTurnIdx=(initTurnIdx+1)%INIT.length;
- if(initTurnIdx===0)pushLog("New round begins");
- render();};
-/* convenience single helper for DM turn advance button injected below */
-/* bestiary */
-function drawBestiary(M){
- M.innerHTML=`<div class="col"><input id="bQ" placeholder="Search bestiary…" oninput="bestFilter(this.value)"><div id="bList" class="col">${MONSTERS.map(mCard).join("")}</div></div>`}
-function mCard(m){return `<div class="pick" onclick="showMonster(this.dataset.n)" data-n="esc(m.n)"><divclass="row"><bclass="grow">{esc(m.n)}"><div class="row"><b class="grow">esc(m.n)"><divclass="row"><bclass="grow">{esc(m.n)}</b><span class="tag">CR ${m.cr}</span></div>
- <div class="small dim">HP m.hp⋅AC{m.hp} · ACm.hp⋅AC{m.ac} · ${m.atks.map(a=>a.n).join(", ")}</div></div>`}
-window.bestFilter=q=>{const lq=q.toLowerCase();document.getElementById("bList").innerHTML=MONSTERS.filter(m=>m.n.toLowerCase().includes(lq)).map(mCard).join("")||'<div class="dim">None found.</div>'};
-window.showMonster=n=>{const m=MONSTERS.find(x=>x.n===n);if(!m)return;
- openModal(`<h2>esc(m.n)<spanclass="tag">CR{esc(m.n)} <span class="tag">CResc(m.n)<spanclass="tag">CR{m.cr} · ${m.xp} XP</span></h2>
- <div class="grid3">{Object.entries(m.stats).map(([k,v])=>`<div class="statbox"><b>{v}</b><span class="dim">${k}</span></div>`).join("")}</div>
- <div class="card small">HP m.hp⋅AC{m.hp} · ACm.hp⋅AC{m.ac} · Speed ${m.spd}</div>
- {m.atks.map(a=>`<div class="row"><span class="grow">{esc(a.n)}</span><button class="pri" onclick="rollDice('/d\d/.test(a.d)?a.d.match(/[0−9d+\-]+/)[0]:′1d20′′,′{/d\d/.test(a.d)?a.d.match(/[0-9d+\- ]+/)[0]:'1d20'}','/d\d/.test(a.d)?a.d.match(/[0−9d+\-]+/)[0]:′1d20′′,′{esc(a.n).replace(/'/g,"")}')">🎲 ${esc(a.d)}</button></div>`).join("")}
- <hr><div class="row"><button class="pri grow" onclick="addToInit('${esc(m.n)}');closeModal()">Add to Initiative</button>
- <button class="ghost" onclick="rollDice('1d20+mod(m.stats.DEX)′,′{mod(m.stats.DEX)}','mod(m.stats.DEX)′,′{esc(m.n)} initiative') .hasOwnProperty?'':'initOnly'}" hidden>x</button></div>`);
- function _x(){}}
-window.addToInit=n=>{const m=MONSTERS.find(x=>x.n===n);if(!m)return;INIT.push({name:m.n,hp:m.hp,ac:m.ac,init:0,mref:m.n});pushLog(m.n+" added to combat");toast(m.n+" added — open Combat and Start Encounter if needed")};
-/* world / all-player screen */
-function drawWorld(M){
- const camp=S.campaign=S.campaign||{locations:[],board:"",shownLocations:[]};
- M.innerHTML=`<div class="col">
-  <div class="card"><h3>Show Board (All Players see)</h3>
-   <textarea rows="3" placeholder="Description shown on every connected player screen…" onchange="setBoard(this.value)">${esc(camp.board)}</textarea>
-   <div class="row"><button class="grow pri" onclick="netBroadcast({t:'flash'});pushLog('Board shared with players');toast('Broadcast to players 📡')">📡 Broadcast Board</button></div></div>
-  <div class="card"><h3>Locations</h3>
-   <div class="row"><input id="locN" placeholder="Location name"><button class="pri" onclick="addLoc()">＋</button></div>
-   {camp.locations.map((L,i)=>`<div class="row"><span class="grow">{esc(L.name)} ${L.visible?'<span class="tag on">shared</span>':'<span class="tag">hidden</span>'}</span>
-    <button onclick="toggleLoc(i)">{i})">i)">{L.visible?"Hide":"Share"}</button><button onclick="delLoc(${i})">🗑</button></div>`).join("")||'<div class="dim small">Add map/location names here, then share individually.</div>'}</div></div>`}
-window.setBoard=v=>{S.campaign.board=v;save()};
-window.addLoc=()=>{const n=$("#locN").value.trim();if(n)S.campaign.locations.push({name:n,visible:false}),save(),drawApp(document.getElementById("app"))};
-window.toggleLoc=i=>{S.campaign.locations[i].visible=!S.campaign.locations[i].visible;save();render();netBroadcast({t:"welcome",campaign:sharedView()})};
-window.delLoc=i=>{S.campaign.locations.splice(i,1);save();render()};
-/* oracle (solo mode) */
-function drawOracle(M){
- M.innerHTML=`<div class="col card"><h3>Solo Oracle</h3><div class="dim small">Ask a yes/no question aloud, then tap — probability weighs toward a yes:</div>
-  <button class="pri" onclick="askOracle()">🔮 Ask the Oracle</button>
-  <div id="oracleOut" style="font-size:1.4em;text-align:center;min-height:40px;color:var(--accent)"></div>
-  <hr><h3>Random Encounter</h3><button onclick="randomEncounter()">🎲 Spawn Random Encounter</button>
-  <h3 style="margin-top:8px">Random NPC</h3><button onclick="genNPC()">Generate NPC</button></div>`}
-window.askOracle=()=>{$("#oracleOut").textContent=ORACLE[Math.floor(Math.random()*ORACLE.length)];pushLog("Oracle answered")};
-window.genNPC=()=>{const f=p=>p[Math.floor(Math.random()*p.length)];
- const name=f(NAME_P.first)+" "+f(NAME_P.last),hooks=["owes money to the wrong people","knows a shortcut through the mountains","is secretly a retired adventurer","desperately seeks a lost sibling","guards an old family secret"];
- openModal(`<h2>NPC</h2><p><b>name</b></p><pclass="dimsmall">{name}</b></p><p class="dim small">name</b></p><pclass="dimsmall">{hooks[Math.floor(Math.random()*hooks.length)]}</p><button class="pri" onclick="closeModal()">Done</button>`)};
-window.randomEncounter=()=>{const pool=MONSTERS.slice(0,18),m=pool[Math.floor(Math.random()*pool.length)];
- toast("Encounter: "+m.n+"!");pushLog("Random encounter: "+m.n);addToInit(m.n)};
-/* session (connect / chat / log) */
-function drawSession(M){
- const joined=!!hostConn&&hostConn.open,hosting=!!peer&&isHost;
- M.innerHTML=`<div class="col">
-  ${hosting?`<div class="card" style="text-align:center"><div class="dim small">Campaign code — share with players</div>
-   <div style="font-size:2.2em;letter-spacing:.35em;color:var(--accent)">${myCode||"------"}</div>
-   <div class="small dim">Players tap Join Session on their home screen and enter this code.</div>
-   <div class="small dim">Connections: ${conns.length}</div></div>`
-  :joined?`<div class="card"><b>Connected to campaign</b> <span class="tag on">#${esc(S.inSessionCode||"")}</span></div>`
-  :`<div class="row"><button class="pri grow" onclick="becomeHost()">🏰 Host Campaign (DM)</button>
-    <button class="grow" onclick="playerJoin()">🔗 Join Campaign</button></div>`}
-  <div class="card"><h3>Session Log</h3><div class="small" style="max-height:300px;overflow-y:auto">${S.log.map(l=>esc(l)).join("<br>")||'<span class="dim">Nothing logged yet.</span>'}</div></div></div>`}
-window.becomeHost=()=>{hostSession(code=>{pushLog("Hosting campaign #"+code);render()},err=>toast("Could not start hosting"))};
-// hostSession signature above takes cb only; adapt:
-function becomeHostSafe(){}
-/* copilot */
-function drawCopilot(M){
- M.innerHTML=`<div class="col card"><h3>DM Copilot</h3>
-  <input id="apiKey" placeholder="OpenAI-compatible API key (stored locally)" value="${esc(S.apiKey||"")}" onchange="S.apiKey=this.value;save()">
-  <div class="dim small">Bring your own key. The copilot sees current encounter state, party HP and conditions, and can suggest checks, DCs, which dice to roll  and plot paths."</div>
-  <div class="row"><input id="cpQ" class="grow" placeholder="Ask: 'party is low — what now?'" onkeydown="if(event.key==='Enter')askCopilot()"><button class="pri" onclick="askCopilot()">Ask</button></div>
-  <div id="cpOut" class="small"></div>
-  <hr><h3>Offline Suggestions (no key needed)</h3>
-  <div class="grid2">
-   <button onclick="sugCheck()">Suggest a Check</button>
-   <button onclick="sugDC()">Suggest DC</button></div></div>`}
-window.sugCheck=()=>{const s=["Persuasion — talking your way past a guard","Investigation — searching the room for clues","Stealth — sneaking past the patrol","Perception — noticing something hidden","Insight — reading the NPC's true intent","Survival — tracking through wilderness"];
- $("#cpOut").innerHTML="<div class='card'>"+s[Math.floor(Math.random()*s.length)]+"</div>"};
-window.sugDC=()=>{const d=[["10","Easy — something most adventurers manage"],["13","Medium — requires some skill"],["15","Moderate — a real test"],["17","Hard — exceptional competence"],["20","Very hard — legendary effort"]];
- const p=d[Math.floor(Math.random()*d.length)];$("#cpOut").innerHTML="<div class='card'><b>DC "+p[0]+"</b> — "+p[1]+"</div>"};
-async function askCopilot(){
- const q=$("#cpQ").value.trim();if(!q)return;
- if(!S.apiKey)return $("#cpOut").innerHTML="<div class='dim'>Add an API key above first.</div>";
- const ch=c();
- const ctx="You are an expert D&D 5e DM assistant. Current state: "+(INIT.length?"In combat: "+INIT.map(r=>r.name+" ("+r.hp+"hp)").join(", "):"No active encounter")+(ch?". Active char: "+ch.name+" Lv"+ch.level+" HP "+ch.hp+"/"+ch.hpMax:"")+". Question: "+q+". Answer concisely for a mobile screen; suggest specific checks, DCs and dice to roll.";
- $("#cpOut").innerHTML="<div class='dim'>Consulting the oracle…</div>";
- try{
-  const r=await fetch("https://api.openai.com/v1/chat/completions",{method:"POST",
-   headers:{Authorization:"Bearer "+S.apiKey,"Content-Type":"application/json"},
-   body:JSON.stringify({model:"gpt-4o-mini",messages:[{role:"system",content:ctx}],max_tokens:400})});
-  const j=await r.json();$("#cpOut").innerHTML="<div class='card'>"+esc(j.choices?.[0]?.message?.content||"No response").replace(/\n/g,"<br>")+"</div>";
- }catch(e){$("#cpOut").innerHTML="<div class='dim'>Request failed — check key/connection.</div>"}}
-/* ---- tools / settings ---- */
-function drawTools(M){
- M.innerHTML=`<div class="col card"><h3>Settings</h3>
-  <h3 style="margin-top:8px">Theme</h3>
-  <div class="grid3">${[["grimoire","🕯 Candlelit Grimoire"],["elven","🌿 Elven Vanguard"],["abyssal","🔥 Abyssal Ember"]].map(([id,n])=>
-   `<div class="pick S.theme===id?′on′:′′"onclick="setTheme(′{S.theme===id?'on':''}" onclick="setTheme('S.theme===id?′on′:′′"onclick="setTheme(′{id}');drawApp(document.getElementById('app'))"><b>n.split("")[1]</b><divclass="smalldim">{n.split(" ")[1]}</b><div class="small dim">n.split("")[1]</b><divclass="smalldim">{n.split(" ").slice(2).join(" ")}</div></div>`).join("")}</div>
-  <hr><h3>Content Packs</h3>
-  <label class="pick" style="text-align:center">📂 Import purchased content files (JSON)<input type="file" accept=".json" multiple hidden onchange="importPack(this.files);this.value=''"></label>
-  {(S.packs||[]).map(p=>`<span class="tag on">✓{esc(p)}</span>`).join("")||'<div class="small dim">SRD subset loaded. Import merged packs anytime.</div>'}
-  <hr><h3>Ambience Mixer</h3>
-  <div class="row"><input id="scN" class="grow" placeholder="Scene name (Tavern, Boss…)"><button class="pri" onclick="saveScene()">Save scene</button></div>
-  <label class="pick small dim" style="text-align:center">🎵 Add audio track to library<input type="file" accept="audio/*" multiple hidden onchange="addTracks(this.files)"></label>
-  <div id="mixer">${MIXER_HTML()}</div>
-  <hr><h3>Data</h3>
-  <div class="grid2"><button onclick="exportAll()">💾 Export All</button>
-  <label class="pick" style="text-align:center;margin:0">📥 Restore Backup<input type="file" accept=".json" hidden onchange="restoreAll(this.files[0])"></label></div>
-  <button class="ghost" onclick="wipe()">⚠ Erase everything</button>
-  </div>`}
-window.wipe=()=>{openModal("<h2>Erase all data?</h2><p class='dim small'>Characters, packs, settings — everything, permanently.</p><div class='grid2'><button class='pri' onclick=\"localStorage.removeItem('grimoire');location.reload()\">Yes, erase</button><button onclick='closeModal()'>Cancel</button></div>")};
-window.restoreAll=f=>{const r=new FileReader();r.onload=()=>{try{const j=JSON.parse(r.result);if(j.chars){Object.assign(S,j);save();toast("Backup restored");render()}else toast("Not a valid backup")}catch(e){toast("Invalid file")}};r.readAsText(f)};
-/* music */
-let AUDIO=null,trkLib=[],scenes={};
-const MUSIC_SCENES={tavern:{name:"Tavern"},dungeon:{name:"Dungeon"},battle:{name:"Battle"},calm:{name:"Calm"}};
-window.addTracks=files=>{for(const f of files){const u=URL.createObjectURL(f);trkLib.push({name:f.name,url:u});}save();render();toast(files.length+" track(s) added")};
-window.saveScene=()=>{const n=$("#scN").value.trim();if(n){scenes[n]=trkLib.map(t=>t.name);toast("Scene '"+n+"' saved")}};
-window.playTrack=i=>{if(!AUDIO)AUDIO=new Audio();AUDIO.src=trkLib[i].url;AUDIO.loop=true;AUDIO.volume=.5;AUDIO.play();toast("Playing: "+trkLib[i].name)};
-window.stopAudio=()=>{AUDIO&&AUDIO.pause();AUDIO=null};;
-function MIXER_HTML(){
- return trkLib.map((t,i)=>`<div class="row"><span class="grow">esc(t.name)</span><buttononclick="playTrack({esc(t.name)}</span><button onclick="playTrack(esc(t.name)</span><buttononclick="playTrack({i})">▶</button></div>`).join("")+
- (trkLib.length?'<button class="ghost grow" onclick="stopAudio()">⏹ Stop music</button>':'<div class="small dim">Import DRM-free audio you own. Tracks persist for this session.</div>');
+ var h="",k,i;
+ h+="<div class='card'><div class='row'><b class='grow'>"+esc(ch.name)+"</b>";
+ h+="<span class='small dim'>Lv "+ch.level+" "+CLASSES[ch.cls].n+"</span></div>";
+ h+="<div class='hpbar"+(ch.hp<=Math.max(1,ch.hpMax*0.25)?" low":"")+"'><div style='width:"+Math.max(0,Math.min(100,ch.hp/ch.hpMax*100))+"%'></div><span>"+ch.hp+" / "+ch.hpMax+" HP - AC "+calcAC(ch)+(ch.tempHp?" (+"+ch.tempHp+" temp)":"")+"</span></div>";
+ h+="<div class='row'><button onclick='adjHP(-1)'>-</button><button class='grow' onclick='setHP()'>Set HP</button><button onclick='adjHP(1)'></button><button onclick='modal(restHTML())'>Rest</button></div>";
+ h+="<div class='row' style='margin-top:8px'><button class='grow small' onclick='setTemp()'>Temp HP: "+(ch.tempHp||0)+"</button><button class='grow small' onclick='setConc()'>"+(ch.conc?"Conc: "+esc(ch.conc):"Concentration")+"</button></div></div>";
+ h+="<div class='card'><h3>Conditions</h3>";
+ for(i=0;i<CONDS.length;i++)h+="<span class='cond"+(ch.conds.indexOf(CONDS[i])>=0?" on":"")+"' onclick='togCond(\""+CONDS[i]+"\")'>"+CONDS[i]+"</span>";
+ h+="</div>";
+ h+="<div class='grid3'>";
+ for(k=0;k<6;k++){var a=AKEYS[k],m=md(tot(ch,a));
+  h+="<div class='statbox' onclick='checkModal(\""+a+"\","+m+")'><b>"+tot(ch,a)+"</b><span>"+a+" "+sgn(m)+"</span></div>";}
+ h+="</div>";
+ h+="<div class='row' style='margin-top:6px'><span class='tag"+(ADV==="norm"?"":" on")+"' onclick='ADV=ADV===\"norm\"?\"adv\":ADV===\"adv\"?\"dis\":\"norm\";render()'>Adv: "+(ADV==="norm"?"Normal":ADV==="adv"?"Adv":"Dis")+"</span>";
+ h+="<span class='tag"+(ch.insp?" on":"")+"' onclick='C().insp=C().insp?0:1;render()'>Inspiration</span></div>";
+ h+="<div class='card'><h3>Skills</h3><div class='list'>";
+ for(k in SKILLS){var p=ch.sk.indexOf(k)>=0,b=md(tot(ch,SKILLS[k]))+(p?prof(ch):0);
+  h+="<div onclick='roll(\"1d20+"+b+"\",\""+k.replace(/_/g," ")+"\")'><span style='color:"+(p?"var(--accent)":"var(--dim)")+"'>"+(p?"*":"-")+"</span> "+k.replace(/_/g," ")+" <span class='dim' style='float:right'>"+sgn(b)+" ("+SKILLS[k]+")</span></div>";}
+ h+="</div></div>";
+ h+="<div class='card'><h3>Attacks</h3><div class='list'>";
+ for(i=0;i<ch.atks.length;i++){var at=ch.atks[i];
+  h+="<div onclick='roll(\"1d20+"+(md(tot(ch,at.to))+prof(ch))+"\",\""+esc(at.n)+" attack\")\"><b>"+esc(at.n)+"</b> <span class='dim small'>"+esc(at.d)+" "+sgn(md(tot(ch,at.to))+prof(ch))+"</span></div>";}
+ h+="</div></div>";
+ h+="<div class='card'><h3>Notes</h3><textarea rows='3' onchange='C().notes=this.value;save()'>"+esc(ch.notes)+"</textarea></div>";
+ return h;
 }
-/* ============================== BOOT ============================== */
-document.body.dataset.theme=S.theme;
+function adjHP(d){
+ var ch=C();UNDO={hp:ch.hp,tp:ch.tempHp};
+ if(d>0)ch.hp=Math.min(ch.hpMax,ch.hp+1);
+ else{if(ch.tempHp>0)ch.tempHp--;else ch.hp=Math.max(0,ch.hp-1);}
+ save();render();
+}
+function setHP(){
+ modal("<h3>Set HP</h3><input id='mi' type='number' value='"+C().hp+"'><button class='pri' style='margin-top:8px' onclick='C().hp=Math.max(0,Math.min(C().hpMax,+$(\"mi\").value||0));save();closeModal();render()'>OK</button>");
+}
+function setTemp(){
+ modal("<h3>Temp HP</h3><input id='mi' type='number' value='"+(C().tempHp||0)+"'><button class='pri' style='margin-top:8px' onclick='C().tempHp=Math.max(0,+$(\"mi\").value||0);save();closeModal();render()'>OK</button>");
+}
+function setConc(){
+ modal("<h3>Concentration</h3><input id='mi' value='"+esc(C().conc)+"'><button class='pri' style='margin-top:8px' onclick='C().conc=$(\"mi\").value.trim();save();closeModal();render()'>OK</button>");
+}
+function restHTML(){
+ return "<h3>Rest</h3><div class='grid2'><button class='pri' onclick='doRest(0)'>Short</button><button class='pri' onclick='doRest(1)'>Long</button></div>";
+}
+function doRest(long){
+ var ch=C();
+ if(long){ch.hp=ch.hpMax;ch.tempHp=0;ch.conds=[];ch.conc="";log(ch.name+" long rest");}
+ else{ch.hp=Math.min(ch.hpMax,ch.hp+die(6)+Math.floor(ch.level/2));log(ch.name+" short rest");}
+ if(CLASSES[ch.cls].spells)ch.slots=slotsFor(ch);
+ save();closeModal();render();
+}
+function togCond(cn){
+ var ch=C(),i=ch.conds.indexOf(cn);
+ if(i>=0)ch.conds.splice(i,1);else ch.conds.push(cn);
+ save();render();
+}
+function checkModal(a,m){
+ modal("<h3>"+ABB[a]+"</h3><div class='grid3'><button onclick='doChk(\""+a+"\","+m+",\"norm\")'>Check</button><button onclick='doChk(\""+a+"\","+m+",\"adv\")'>Adv</button><button onclick='doChk(\""+a+"\","+m+",\"dis\")'>Dis</button></div><div class='grid3' style='margin-top:8px'><button onclick='doChk(\""+a+" save\","+m+",\"norm\")'>Save</button><button onclick='doChk(\""+a+" save\","+m+",\"adv\")'>Adv</button><button onclick='doChk(\""+a+" save\","+m+",\"dis\")'>Dis</button></div>");
+}
+function doChk(n,m,mode){
+ var old=ADV;ADV=mode;
+ roll("1d20+"+m,n);ADV=old;closeModal();
+}
+
+/* ================= SPELLS ================= */
+function spellsHTML(ch){
+ if(!CLASSES[ch.cls].spells)return "<div class='card dim'>Non-caster.</div>";
+ var ab=CLASSES[ch.cls].cast,sm=md(tot(ch,ab)),dc=8+sm+prof(ch),h="";
+ h+="<div class='card'><h3>Spellcasting - "+ab+"</h3><div class='grid3'>";
+ h+="<div class='statbox'><b>"+dc+"</b><span>DC</span></div><div class='statbox'><b>"+sgn(sm)+"</b><span>Mod</span></div><div class='statbox'><b>"+sgn(sm+prof(ch))+"</b><span>Atk</span></div></div>";
+ if(ch.slots){h+="<div>";
+  for(var i=0;i<9;i++)if(ch.slots[i]>0)h+="<span class='tag' onclick='C().slots["+i+"]--;save();render()'>Lv"+(i+1)+": "+ch.slots[i]+"</span>";
+  h+="</div>";}
+ h+="</div><div class='card'><input id='sq' placeholder='Search...' oninput='spFilter()'><div class='list' id='splist'>"+spList(ch,"")+"</div></div>";
+ return h;
+}
+function spList(ch,q){
+ var h="";
+ for(var i=0;i<SPELLS.length;i++){var s=SPELLS[i];
+  if(s.c!=="all"&&s.c.split(",").indexOf(ch.cls)<0)continue;
+  if(q&&s.n.toLowerCase().indexOf(q)<0)continue;
+  h+="<div onclick='cast(\""+esc(s.n)+"\")'><b>"+esc(s.n)+"</b> <span class='dim small'>Lv"+s.l+"</span><div class='small dim'>"+esc(s.d)+"</div></div>";}
+ return h||"<div class='dim'>None.</div>";
+}
+function spFilter(){var q=$("sq").value.toLowerCase();$("splist").innerHTML=spList(C(),q);}
+function cast(n){log("Cast "+n);toast("Cast: "+n);}
+
+/* ================= INVENTORY ================= */
+function invHTML(ch){
+ var h="<div class='card row'><b class='grow'>"+ch.gp+" gp</b><button onclick='setGP()'>Edit</button></div>";
+ h+="<div class='card'><h3>Items</h3><div class='list'>";
+ for(var i=0;i<ch.inv.length;i++)h+="<div class='row'><span class='grow'>"+esc(ch.inv[i].n)+" x"+ch.inv[i].q+"</span><button onclick='adjInv("+i+",-1)'>-</button><button onclick='adjInv("+i+",1)'>+</button></div>";
+ h+="</div><button class='pri grow' style='margin-top:8px' onclick='addItem()'>Add Item</button></div>";
+ return h;
+}
+function adjInv(i,d){var ch=C();ch.inv[i].q+=d;if(ch.inv[i].q<=0)ch.inv.splice(i,1);save();render();}
+function addItem(){
+ modal("<h3>Add Item</h3><input id='mi' placeholder='Name'><input id='mq' type='number' value='1' style='margin-top:6px'><button class='pri' style='margin-top:8px' onclick='var n=$(\"mi\").value.trim();if(n){C().inv.push({n:n,q:+$(\"mq\").value||1});save();closeModal();render()}'>Add</button>");
+}
+function setGP(){
+ modal("<h3>Gold</h3><input id='mi' type='number' value='"+C().gp+"'><button class='pri' style='margin-top:8px' onclick='C().gp=Math.max(0,+$(\"mi\").value||0);save();closeModal();render()'>OK</button>");
+}
+
+/* ================= DICE TAB ================= */
+function diceHTML(){
+ var h="<div class='card'><h3>Dice</h3><div class='row wrap'>";
+ var ds=["1d20","2d20kh1","1d100","4d6kh3","1d4","1d6","1d8","1d10","1d12"],i;
+ for(i=0;i<ds.length;i++)h+="<button onclick='roll(\""+ds[i]+"\")'>"+ds[i]+"</button>";
+ h+="</div><input id='dx' placeholder='e.g. 2d10+1d6' style='margin-top:8px'>";
+ h+="<button class='pri grow' style='margin-top:6px' onclick='roll($(\"dx\").value)'>ROLL</button></div>";
+ return h;
+}
+
+/* ================= SESSION ================= */
+function sessHTML(){
+ var h="<div class='card'><h3>Session Log</h3><div class='small' style='max-height:300px;overflow-y:auto'>";
+ for(var i=0;i<S.log.length;i++)h+=esc(S.log[i])+"<br>";
+ h+="</div><button class='ghost' style='margin-top:8px' onclick='S.log=[];save();render()'>Clear</button></div>";
+ return h;
+}
+
+/* ================= COMBAT ================= */
+function combatHTML(){
+ var h="<div class='row'><button class='pri grow' onclick='startEnc()'>Start Encounter</button></div>";
+ if(INIT.length)h+="<button class='pri grow' style='margin-top:6px' onclick='nextTurn()'>Next Turn</button>";
+ for(var i=0;i<INIT.length;i++){var r=INIT[i];
+  h+="<div class='irow"+(i===TURN?" act":"")+"'><b style='width:28px'>"+r.init+"</b><div class='grow'><b>"+esc(r.name)+"</b><div class='small dim'>AC "+r.ac+"</div></div><b>"+r.hp+" HP</b><button onclick='hitInit("+i+",-1)'>-</button><button onclick='hitInit("+i+",1)'>+</button></div>";}
+ if(!INIT.length)h+="<div class='card dim'>No combatants.</div>";
+ return h;
+}
+function startEnc(){
+ INIT=[];
+ if(C())INIT.push({name:C().name,hp:C().hp,ac:calcAC(C()),init:die(20),isPC:1});
+ modal("<h3>Add Monster</h3><input id='mi' placeholder='Name' list='mlist'><datalist id='mlist'>");
+ var i;for(i=0;i<MONSTERS.length;i++)$("mlist").innerHTML+="<option value='"+esc(MONSTERS[i].n)+"'>";
+ $("modalBox").innerHTML+="<input id='mq' type='number' value='1' style='margin-top:6px'><button class='pri' style='margin-top:8px' onclick='addMons()'>Add</button>";
+}
+function addMons(){
+ var n=$("mi").value.trim(),cnt=Math.min(20,Math.max(1,+$("mq").value||1)),m=null,i;
+ for(i=0;i<MONSTERS.length;i++)if(MONSTERS[i].n.toLowerCase()===n.toLowerCase())m=MONSTERS[i];
+ if(!m){toast("Not found");return}
+ for(i=0;i<cnt;i++)INIT.push({name:m.n+(cnt>1?" "+(i+1):""),hp:m.hp,ac:m.ac,init:die(20)});
+ INIT.sort(function(a,b){return b.init-a.init});TURN=0;
+ log(cnt+"x "+m.n+" encounter");closeModal();render();
+}
+function hitInit(i,d){
+ INIT[i].hp+=d;
+ if(INIT[i].hp<=0){log(INIT[i].name+" falls");INIT.splice(i,1);if(TURN>=i)TURN=Math.min(TURN,INIT.length-1);}
+ save();render();
+}
+function nextTurn(){if(INIT.length){TURN=(TURN+1)%INIT.length;render();}}
+
+/* ================= BESTIARY ================= */
+function bestHTML(){
+ var h="<input placeholder='Search...' oninput='var q=this.value.toLowerCase(),l=document.getElementById(\"blist\"),o=\"\";";
+ h+="for(var i=0;i<MONSTERS.length;i++)if(MONSTERS[i].n.toLowerCase().indexOf(q)>=0)o+=bestCard(i);l.innerHTML=o||\"None.\"' >";
+ h+="<div class='col' id='blist'>";
+ for(var i=0;i<MONSTERS.length;i++)h+=bestCard(i);
+ return h+"</div>";
+}
+function bestCard(i){
+ var m=MONSTERS[i];
+ return "<div class='pick' onclick='showMons("+i+")'><div class='row'><b class='grow'>"+esc(m.n)+"</b><span class='tag'>CR "+m.cr+"</span></div><div class='small dim'>HP "+m.hp+" - AC "+m.ac+" - "+m.at.join("; ")+"</div></div>";
+}
+function showMons(i){
+ var m=MONSTERS[i],h="<h3>"+esc(m.n)+" (CR "+m.cr+", "+m.xp+" XP)</h3><div class='grid3' style='margin:8px 0'>";
+ for(var k in m.st)h+="<div class='statbox'><b>"+m.st[k]+"</b><span>"+k+"</span></div>";
+ h+="</div><div class='small dim'>HP "+m.hp+" - AC "+m.ac+"</div><div class='col' style='margin-top:8px'>";
+ for(var j=0;j<m.at.length;j++){var mm=m.at[j].match(/\d+d\d+(\+\d+)?/);
+  h+="<div class='row'><span class='grow'>"+esc(m.at[j])+"</span><button onclick='roll(\""+(mm?mm[0]:"1d20")+"\",\""+esc(m.at[j].split(" +")[0])+"\")'>Roll</button></div>";}
+ h+="</div><button class='pri grow' style='margin-top:8px' onclick='INIT.push({name:\""+esc(m.n)+"\",hp:"+m.hp+",ac:"+m.ac+",init:die(20)});closeModal();toast(\"Added to combat\")'>Add to Initiative</button>";
+ modal(h);
+}
+
+/* ================= ORACLE ================= */
+function oracleHTML(){
+ return "<div class='card col'><h3>Solo Oracle</h3><div class='dim small'>Ask a yes/no question, then tap.</div><button class='pri' onclick='$(\"oc\").textContent=rnd(ORACLE);log(\"Oracle: \"+$(\"oc\").textContent)'>Ask the Oracle</button><div id='oc' style='font-size:1.4em;text-align:center;min-height:40px;color:var(--accent)'></div><button onclick='genNPC()'>Random NPC</button></div>";
+}
+function genNPC(){
+ modal("<h3>NPC</h3><b>"+rnd(NAMES.f)+" "+rnd(NAMES.l)+"</b><div class='small dim' style='margin-top:6px'>"+rnd(["owes money to the wrong people","knows a mountain shortcut","is secretly a retired adventurer","seeks a lost sibling","guards a family secret","will betray you for the right price"])+"</div>");
+}
+
+/* ================= PARTY & TOOLS ================= */
+function partyHTML(){
+ var h="";
+ for(var i=0;i<S.chars.length;i++){var ch=S.chars[i];
+  h+="<div class='irow' onclick='S.activeChar="+i+";TAB=\"Character\";render()'><b class='grow'>"+esc(ch.name)+"</b><span class='small dim'>"+CLASSES[ch.cls].n+"</span><b>"+ch.hp+"/"+ch.hpMax+"</b></div>";}
+ h+="<button class='pri grow' onclick='startBuild()'>New Character</button>";
+ return h||"<div class='card dim'>No characters.</div>";
+}
+function toolsHTML(){
+ var h="<div class='card'><h3>Theme</h3><div class='grid3'>";
+ var th=[["grimoire","Grimoire"],["elven","Elven"],["abyssal","Abyssal"]];
+ for(var i=0;i<3;i++)h+="<div class='pick"+(S.theme===th[i][0]?" on":"")+"' onclick='S.theme=\""+th[i][0]+"\";render()'><b>"+th[i][1]+"</b></div>";
+ h+="</div></div>";
+ h+="<div class='card'><h3>Backups</h3><div class='grid2'><button onclick='doExport()'>Export All</button><label class='pick' style='text-align:center'>Restore<input type='file' accept='.json' hidden onchange='doImport(this.files[0])'></label></div></div>";
+ h+="<div class='card'><button class='ghost' style='color:var(--danger)' onclick='modal(\"<h3>Erase everything?</h3><div class=grid2><button class=pri onclick=localStorage.removeItem(\\\"grimoire\\\");location.reload()>Yes</button><button onclick=closeModal()>No</button></div>\")'>Erase everything</button></div>";
+ return h;
+}
+function doExport(){
+ var a=document.createElement("a");
+ a.href=URL.createObjectURL(new Blob([JSON.stringify(S,null,2)],{type:"application/json"}));
+ a.download="grimoire-backup.json";a.click();
+}
+function doImport(f){
+ if(!f)return;var r=new FileReader();
+ r.onload=function(){try{var j=JSON.parse(r.result);if(j&&j.chars){S=j;save();render();toast("Restored")}else toast("Invalid")}catch(e){toast("Bad file")}};
+ r.readAsText(f);
+}
+
+/* ================= BOOT ================= */
+load();
 render();
-if('serviceWorker' in navigator){/* offline caching via hosting — optional */}
-console.log("Grimoire ready.");
 </script>
 </body>
 </html>
-
