@@ -3,7 +3,10 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Grimoire</title>
+<meta name="theme-color" content="#0e0b14">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<title>Grimoire Lore Engine</title>
 <style>
 :root{--bg:#0e0b14;--panel:#171320;--card:#1e1828;--edge:#2e2540;--text:#e8e2f0;
 --dim:#8f86a3;--accent:#c9a227;--accent2:#7c5cd6;--danger:#d64545;--ok:#3fae6a}
@@ -13,7 +16,8 @@ body[data-theme="abyssal"]{--bg:#140a0a;--panel:#241010;--card:#2c1515;--edge:#4
 --text:#f0e4e0;--dim:#a38480;--accent:#e06a3a;--accent2:#a83a2a;--ok:#c9822e}
 *{box-sizing:border-box;margin:0;padding:0;font-family:Georgia,serif}
 body{background:var(--bg);color:var(--text);font-size:16px}
-h3{color:var(--accent);font-size:1em;margin-bottom:6px}
+h1,h2,h3{color:var(--accent);margin-bottom:6px}
+h1{font-size:1.4em} h2{font-size:1.2em} h3{font-size:1em}
 button{background:var(--card);color:var(--text);border:1px solid var(--edge);
 border-radius:10px;padding:10px 12px;font-size:.95em;cursor:pointer}
 button.pri{background:linear-gradient(160deg,var(--accent),var(--accent2));
@@ -28,7 +32,7 @@ color:var(--text);border-radius:10px;padding:10px;font-size:1em}
 #main{flex:1;padding:0 14px 90px}
 #navbar{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;
 max-width:520px;display:flex;gap:4px;padding:8px;background:var(--panel);
-border-top:1px solid var(--edge)}
+border-top:1px solid var(--edge);z-index:40}
 #navbar button{flex:1;font-size:.85em;padding:10px 2px}
 .card{background:var(--card);border:1px solid var(--edge);border-radius:14px;
 padding:14px;margin-bottom:12px}
@@ -68,7 +72,7 @@ border:1px solid var(--edge);border-radius:12px;padding:8px;margin-bottom:6px}
 align-items:flex-end;z-index:50}
 #modalWrap.open{display:flex}
 #modalBox{background:var(--card);border-radius:18px 18px 0 0;padding:18px;
-width:100%;max-width:520px;max-height:80vh;overflow-y:auto;margin:0 auto}
+width:100%;max-width:520px;max-height:85vh;overflow-y:auto;margin:0 auto;display:flex;flex-direction:column;gap:8px}
 #toast{position:fixed;top:14px;left:50%;transform:translateX(-50%) translateY(-80px);
 background:var(--accent);color:#141018;padding:10px 18px;border-radius:999px;
 font-weight:bold;z-index:99;transition:.3s}
@@ -78,15 +82,40 @@ flex-direction:column;align-items:center;justify-content:center;z-index:80}
 #rollOv.show{display:flex}
 #rollBig{font-size:4em;font-weight:bold;color:var(--accent)}
 #rollLbl{color:var(--dim);margin-bottom:10px;text-align:center;padding:0 20px}
+#fabAI{position:fixed;bottom:80px;right:20px;width:50px;height:50px;border-radius:25px;
+background:linear-gradient(160deg,var(--accent2),var(--accent));color:#fff;font-weight:bold;
+border:none;box-shadow:0 4px 10px rgba(0,0,0,.5);z-index:45;cursor:pointer;display:flex;
+align-items:center;justify-content:center;font-size:1.2em}
+.md-view{background:var(--panel);padding:14px;border-radius:10px;font-family:sans-serif;line-height:1.5;overflow-y:auto}
+.wiki-link{color:var(--accent2);cursor:pointer;font-weight:bold}
 </style>
 </head>
 <body>
 <div id="app"></div>
+<button id="fabAI" onclick="openAI()">AI</button>
 <div id="modalWrap" onclick="if(event.target===this)closeModal()"><div id="modalBox"></div></div>
 <div id="toast"></div>
 <div id="rollOv"><div id="rollLbl"></div><div id="rollBig"></div></div>
 <script>
 "use strict";
+
+/* ================= PWA INJECTION ================= */
+(function setupPWA(){
+ var manifest = {
+  name: "Grimoire Lore Engine", short_name: "Grimoire", display: "standalone",
+  background_color: "#0e0b14", theme_color: "#c9a227",
+  icons: [{ src: "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='1em' font-size='80'>📖</text></svg>", sizes: "192x192", type: "image/svg+xml" }]
+ };
+ var link = document.createElement('link');
+ link.rel = 'manifest';
+ link.href = 'data:application/manifest+json,' + encodeURIComponent(JSON.stringify(manifest));
+ document.head.appendChild(link);
+ if('serviceWorker' in navigator){
+  var swCode = "self.addEventListener('install', e => e.waitUntil(self.skipWaiting())); self.addEventListener('fetch', e => {});";
+  var blob = new Blob([swCode], {type: 'application/javascript'});
+  navigator.serviceWorker.register(URL.createObjectURL(blob)).catch(function(){});
+ }
+})();
 
 /* ================= DATA ================= */
 var ABB={STR:"Strength",DEX:"Dexterity",CON:"Constitution",INT:"Intelligence",WIS:"Wisdom",CHA:"Charisma"};
@@ -177,18 +206,63 @@ var NAMES={f:["Bryn","Kael","Thora","Eldric","Mira","Fenwick","Isolde","Dain","L
 l:["Ashdown","Emberfell","Thornwood","Greywake","Ironvale","Moonwhisper","Duskbane","Stormhelm","Blackbriar","Frosthold","Silvermoor"]};
 var ORACLE=["Yes, and...","Yes","Yes, but...","Unclear - ask again","No, but...","No","No, and..."];
 var CONDS=["Blinded","Charmed","Deafened","Frightened","Grappled","Invisible","Poisoned","Prone","Restrained","Stunned","Exhaustion"];
-var TABSETS={player:["Character","Inventory","Dice","Spells","Session"],
-dm:["Party","Character","Combat","Bestiary","Tools"],
-solo:["Character","Inventory","Dice","Spells","Oracle","Combat"]};
+var TABSETS={player:["Character","Inventory","Spells","Vault","Session"],
+dm:["Combat","Bestiary","Vault","Oracle","Tools"],
+solo:["Character","Combat","Vault","Oracle","Tools"]};
 
-/* ================= STATE ================= */
-var S={role:"player",theme:"grimoire",chars:[],activeChar:0,log:[],packs:[]};
-var route="home", TAB="Character", ADV="norm", UNDO=null, INIT=[], TURN=-1, BLD=null;
-function save(){try{localStorage.setItem("grimoire",JSON.stringify(S))}catch(e){}}
-function load(){try{var j=JSON.parse(localStorage.getItem("grimoire"));if(j)for(var k in j)S[k]=j[k]}catch(e){}}
+/* ================= STATE & DATABASE ================= */
+var S={role:"player",theme:"grimoire",chars:[],activeChar:0,log:[],vault:[],aiKey:""};
+var route="home", TAB="Character", ADV="norm", UNDO=null, INIT=[], TURN=-1, BLD=null, DB=null;
+
+function initDB(cb){
+ var req = indexedDB.open("GrimoireDB", 1);
+ req.onupgradeneeded = function(e){
+  var db = e.target.result;
+  if(!db.objectStoreNames.contains("store")) db.createObjectStore("store");
+ };
+ req.onsuccess = function(e){
+  DB = e.target.result;
+  var tx = DB.transaction("store","readonly");
+  var getReq = tx.objectStore("store").get("state");
+  getReq.onsuccess = function(){
+   if(getReq.result){
+    try{ var j=JSON.parse(getReq.result); for(var k in j) S[k]=j[k]; }catch(err){}
+   }
+   if(!S.vault) S.vault = [];
+   if(!S.aiKey) S.aiKey = "";
+   if(cb) cb();
+  };
+ };
+ req.onerror = function(){ if(cb) cb(); };
+}
+function save(){
+ if(!DB) return;
+ try {
+  var tx = DB.transaction("store","readwrite");
+  tx.objectStore("store").put(JSON.stringify(S), "state");
+ } catch(e){}
+}
 function $(i){return document.getElementById(i)}
 function C(){return S.chars[S.activeChar]||null}
 function esc(s){return String(s==null?"":s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;")}
+function mdParse(str){
+ if(!str) return "";
+ return esc(str)
+  .replace(/^### (.*$)/gim, '<h3>$1</h3>')
+  .replace(/^## (.*$)/gim, '<h2>$1</h2>')
+  .replace(/^# (.*$)/gim, '<h1>$1</h1>')
+  .replace(/\*\*(.*?)\*\*/g, '<b>$1</b>')
+  .replace(/\*(.*?)\*/g, '<i>$1</i>')
+  .replace(/\[\[(.*?)\]\]/g, "<span class='wiki-link' onclick='wikiLink(\"$1\")'>[$1]</span>")
+  .replace(/\n/g, '<br>');
+}
+function wikiLink(q){
+ var term = q.toLowerCase().trim();
+ for(var i=0;i<MONSTERS.length;i++){ if(MONSTERS[i].n.toLowerCase() === term){ showMons(i); return; } }
+ for(var j=0;j<SPELLS.length;j++){ if(SPELLS[j].n.toLowerCase() === term){ showSpell(j); return; } }
+ for(var k=0;k<S.vault.length;k++){ if(S.vault[k].n.toLowerCase().replace('.md','').replace('.txt','') === term){ viewVault(k); return; } }
+ toast("Data not found: " + q);
+}
 function md(v){return Math.floor((((+v)||10)-10)/2)}
 function sgn(v){return v>=0?"+"+v:String(v)}
 function tot(ch,k){var b=(+ch.stats[k])||10;var sp=SPECIES[ch.species];return b+((sp&&sp.asi[k])||0)}
@@ -231,6 +305,7 @@ function roll(expr,label){
 function go(r,t){route=r;if(t)TAB=t;render()}
 function render(){
  save();document.body.dataset.theme=S.theme;
+ $("fabAI").style.display = (route==="app"||route==="home")?"flex":"none";
  if(route==="home")drawHome();
  else if(route==="build")drawBuild();
  else drawApp();
@@ -240,14 +315,76 @@ function drawHome(){
  h+="<div class='card'><h3>Your role</h3><div class='grid3'>";
  var roles=[["player","Player"],["dm","DM"],["solo","Solo"]],i;
  for(i=0;i<3;i++)h+="<div class='pick"+(S.role===roles[i][0]?" on":"")+
-  "' onclick=\"S.role='"+roles[i][0]+"';render()\"><b>"+roles[i][1]+"</b></div>";
+  "' onclick=\"S.role='"+roles[i][0]+"';TAB=TABSETS['"+roles[i][0]+"'][0];render()\"><b>"+roles[i][1]+"</b></div>";
  h+="</div></div>";
  h+="<button class='pri' onclick='startBuild()'>New Character</button>";
  if(S.chars.length)h+="<button onclick='go(\"app\")'>Continue - "+esc(C()?C().name:"")+"</button>";
  h+="<button onclick='go(\"app\",\"Session\")'>Session Log</button>";
  h+="<button onclick='go(\"app\",\"Tools\")'>Settings and Data</button>";
- h+="<div class='card small dim'>Data lives only on this device. Use Tools to back up.</div>";
+ h+="<div class='card small dim'>Data is secured locally using IndexedDB. Add this page to your Home Screen to install as an offline App.</div>";
  $("app").innerHTML=h+"</div></div>";
+}
+
+/* ================= AI MODULE ================= */
+function openAI(){
+ var h="<h2>Gemini DM Co-Pilot</h2>";
+ h+="<div id='aiOutput' class='md-view' style='height:200px;margin-bottom:8px'></div>";
+ var quick = ["Generate NPC", "Describe Location", "Random Encounter", "Rule Dispute"];
+ h+="<div class='row wrap' style='margin-bottom:8px'>";
+ for(var i=0;i<quick.length;i++) h+="<button class='small' onclick='$(\"aiInput\").value=\""+quick[i]+"\";runAI()'>"+quick[i]+"</button>";
+ h+="</div>";
+ h+="<textarea id='aiInput' placeholder='Ask a ruling, plan an encounter, or check notes...' rows='3'></textarea>";
+ h+="<div class='row' style='margin-top:8px'><button class='ghost' onclick='closeModal()'>Close</button><button id='aiBtn' class='pri grow' onclick='runAI()'>Send</button></div>";
+ modal(h);
+ if(!S.aiKey) $("aiOutput").innerHTML = "<i>Please set your Gemini API Key in the Tools tab first.</i>";
+}
+async function runAI(){
+ if(!S.aiKey){ toast("API Key missing"); return; }
+ var prompt = $("aiInput").value.trim();
+ if(!prompt) return;
+ $("aiBtn").innerText = "Thinking...";
+ $("aiOutput").innerHTML = "<i>Communing with the weave...</i>";
+ 
+ var ctx = "System Role: You are a D&D 5E assistant and Dungeon Master co-pilot. Keep responses concise, objective, and formatted in Markdown without conversational fluff. Do not use em-dashes.\n";
+ ctx += "App State: Role=" + S.role + ". Active Tab=" + TAB + ".\n";
+ if(C()) ctx += "Active PC: " + C().name + " (Lv " + C().level + " " + C().cls + ").\n";
+ if(INIT.length) ctx += "Combat Tracker Active with " + INIT.length + " combatants.\n";
+ 
+ var vFiles = S.vault.filter(function(f){return f.useCtx && f.type==="md"});
+ if(vFiles.length){
+  ctx += "\n--- VAULT CONTEXT FILES ---\n";
+  for(var i=0;i<vFiles.length;i++) ctx += "File: " + vFiles[i].n + "\n" + vFiles[i].d + "\n\n";
+ }
+ 
+ var payload = { contents: [{parts: [{text: ctx + "\nUser Query: " + prompt}]}] };
+ try {
+  var res = await fetch("https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key="+S.aiKey, {
+   method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify(payload)
+  });
+  var data = await res.json();
+  var reply = data.candidates[0].content.parts[0].text;
+  $("aiOutput").innerHTML = mdParse(reply);
+  $("aiInput").value = "";
+ } catch(e){
+  $("aiOutput").innerHTML = "<b style='color:var(--danger)'>Connection failed. Check API key and network.</b>";
+ }
+ $("aiBtn").innerText = "Send";
+}
+
+async function testAPI(){
+ if(!S.aiKey){ toast("Please enter a key first"); return; }
+ $("testBtn").innerText = "Testing...";
+ var payload = { contents: [{parts: [{text: "Reply exactly with 'Connection Successful'."}]}] };
+ try {
+  var res = await fetch("https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key="+S.aiKey, {
+   method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify(payload)
+  });
+  if(res.ok) toast("API Connection Successful!");
+  else toast("API Error. Check your key.");
+ } catch(e){
+  toast("Network connection failed.");
+ }
+ $("testBtn").innerText = "Test Connection";
 }
 
 /* ================= BUILDER ================= */
@@ -308,14 +445,15 @@ function buildStep(){
    h+="<div class='pick"+(c.species===k?" on":"")+"' onclick=\"BLD.ch.species='"+k+"';render()\"><b>"+e.n+"</b><div class='small dim'>"+e.d+"</div></div>";}
   h+="</div>";
  }else if(BLD.step===3){
+  h="<button class='ghost' style='width:100%;margin-bottom:8px' onclick='var bs=[];for(var k in BACKGROUNDS)bs.push(k);BLD.ch.bg=rnd(bs);BLD.ch.sk=BACKGROUNDS[BLD.ch.bg].sk.slice();render()'>Randomize Background</button>";
   for(k in BACKGROUNDS){e=BACKGROUNDS[k];
    h+="<div class='pick"+(c.bg===k?" on":"")+"' onclick=\"BLD.ch.bg='"+k+"';BLD.ch.sk=BACKGROUNDS['"+k+"'].sk.slice();render()\"><b>"+e.n+"</b><div class='small dim'>"+e.d+" - "+e.sk.join(", ").replace(/_/g," ")+"</div></div>";}
  }else if(BLD.step===4){
   var cost={9:1,10:2,11:3,12:4,13:5,14:7,15:9};
   h="<div class='card'><h3>Method</h3><div class='grid2'>";
-  h+="<div class='pick on' onclick='optStats();render()'><b>Recommended</b><div class='small dim'>Auto for your class</div></div>";
-  h+="<div class='pick' onclick='BLD.rollSets=[];BLD.assigned=0;BLD.draft={STR:10,DEX:10,CON:10,INT:10,WIS:10,CHA:10};render()'><b>Point Buy</b><div class='small dim'>Spend 27 points</div></div>";
-  h+="<div class='pick' onclick='rollSets()'><b>Roll 4d6</b><div class='small dim'>Roll six sets, tap in order</div></div>";
+  h+="<button class='pri' onclick='optStats();render();toast(\"Stats Optimized\")'>Set Recommended</button>";
+  h+="<button onclick='BLD.rollSets=[];BLD.assigned=0;BLD.draft={STR:10,DEX:10,CON:10,INT:10,WIS:10,CHA:10};render()'>Reset Point Buy</button>";
+  h+="<button onclick='rollSets()' style='grid-column: span 2'>Roll 4d6 (In Order)</button>";
   h+="</div></div>";
   if(BLD.rollSets.length){
    h+="<div class='card'><h3>Rolls left: "+(6-BLD.assigned)+"</h3>";
@@ -358,7 +496,7 @@ function optStats(){
  druid:{STR:8,DEX:13,CON:14,INT:12,WIS:15,CHA:10},
  bard:{STR:10,DEX:14,CON:13,INT:8,WIS:12,CHA:15}};
  var p=P[BLD.ch.cls]||P.fighter,k;
- for(k in p)BLD.ch.stats[k]=p[k];
+ for(k in p){ BLD.ch.stats[k]=p[k]; BLD.draft[k]=p[k]; }
 }
 function randAll(){
  var ks=["human","elf","dwarf","halfling","dragonborn","gnome","half_elf","half_orc","tiefling"];
@@ -404,14 +542,65 @@ function tabHTML(t){
  if(t==="Character")return sheetHTML(C());
  if(t==="Spells")return spellsHTML(C());
  if(t==="Inventory")return invHTML(C());
- if(t==="Dice")return diceHTML();
+ if(t==="Vault")return vaultHTML();
  if(t==="Session")return sessHTML();
  if(t==="Combat")return combatHTML();
  if(t==="Bestiary")return bestHTML();
  if(t==="Tools")return toolsHTML();
  if(t==="Oracle")return oracleHTML();
- if(t==="Party")return partyHTML();
  return "";
+}
+
+/* ================= VAULT (FILES & IMAGES) ================= */
+function vaultHTML(){
+ var h="<div class='card'><h3>Campaign Vault</h3><div class='small dim'>Upload .md lore files or image references.</div>";
+ h+="<label class='pri tag' style='text-align:center;display:block;margin-top:8px'>Upload File<input type='file' accept='.md,.txt,image/*' hidden onchange='handleUpload(this.files[0])'></label></div>";
+ if(S.vault.length===0) h+="<div class='card dim'>Vault is empty.</div>";
+ else {
+  h+="<div class='col'>";
+  for(var i=0;i<S.vault.length;i++){
+   var v=S.vault[i];
+   h+="<div class='card row' style='padding:10px'><b class='grow'>"+esc(v.n)+"</b>";
+   if(v.type==="md"){
+    h+="<label class='small dim'><input type='checkbox' "+(v.useCtx?"checked":"")+" onchange='S.vault["+i+"].useCtx=this.checked;save()'> AI</label>";
+   }
+   h+="<button onclick='viewVault("+i+")'>View</button>";
+   h+="<button style='color:var(--danger)' onclick='S.vault.splice("+i+",1);save();render()'>X</button></div>";
+  }
+  h+="</div>";
+ }
+ return h;
+}
+function handleUpload(file){
+ if(!file) return;
+ if(file.type.match("image.*")){
+  var reader = new FileReader();
+  reader.onload = function(e){
+   var img = new Image();
+   img.onload = function(){
+    var cvs = document.createElement("canvas"), ctx = cvs.getContext("2d"), max = 800, w = img.width, h = img.height;
+    if(w>max || h>max){ if(w>h){h*=max/w; w=max;} else {w*=max/h; h=max;} }
+    cvs.width = w; cvs.height = h; ctx.drawImage(img, 0, 0, w, h);
+    S.vault.push({n:file.name, type:"image", d:cvs.toDataURL("image/jpeg", 0.7), useCtx:false});
+    save(); render(); toast("Image saved");
+   };
+   img.src = e.target.result;
+  };
+  reader.readAsDataURL(file);
+ } else if(file.name.endsWith(".md") || file.name.endsWith(".txt")){
+  var reader = new FileReader();
+  reader.onload = function(e){
+   S.vault.push({n:file.name, type:"md", d:e.target.result, useCtx:false});
+   save(); render(); toast("Document saved");
+  };
+  reader.readAsText(file);
+ } else toast("Unsupported file");
+}
+function viewVault(i){
+ var v = S.vault[i], h="<h2>"+esc(v.n)+"</h2>";
+ if(v.type==="image") h+="<img src='"+v.d+"' style='max-width:100%;border-radius:10px;margin-top:10px'>";
+ else h+="<div class='md-view'>"+mdParse(v.d)+"</div>";
+ modal(h);
 }
 
 /* ================= CHARACTER SHEET ================= */
@@ -497,10 +686,14 @@ function spList(ch,q){
  for(var i=0;i<SPELLS.length;i++){var s=SPELLS[i];
   if(s.c!=="all"&&s.c.split(",").indexOf(ch.cls)<0)continue;
   if(q&&s.n.toLowerCase().indexOf(q)<0)continue;
-  h+="<div onclick='cast(\""+esc(s.n)+"\")'><b>"+esc(s.n)+"</b> <span class='dim small'>Lv"+s.l+"</span><div class='small dim'>"+esc(s.d)+"</div></div>";}
+  h+="<div onclick='showSpell("+i+")'><b>"+esc(s.n)+"</b> <span class='dim small'>Lv"+s.l+"</span><div class='small dim'>"+esc(s.d)+"</div></div>";}
  return h||"<div class='dim'>None.</div>";
 }
 function spFilter(){var q=$("sq").value.toLowerCase();$("splist").innerHTML=spList(C(),q);}
+function showSpell(i){
+ var s = SPELLS[i];
+ modal("<h3>"+esc(s.n)+"</h3><div class='small dim'>Level "+s.l+" - "+esc(s.c)+"</div><div style='margin-top:8px'>"+esc(s.d)+"</div><button class='pri grow' style='margin-top:12px;width:100%' onclick='cast(\""+esc(s.n)+"\");closeModal()'>Cast Spell</button>");
+}
 function cast(n){log("Cast "+n);toast("Cast: "+n);}
 
 /* ================= INVENTORY ================= */
@@ -517,16 +710,6 @@ function addItem(){
 }
 function setGP(){
  modal("<h3>Gold</h3><input id='mi' type='number' value='"+C().gp+"'><button class='pri' style='margin-top:8px' onclick='C().gp=Math.max(0,+$(\"mi\").value||0);save();closeModal();render()'>OK</button>");
-}
-
-/* ================= DICE TAB ================= */
-function diceHTML(){
- var h="<div class='card'><h3>Dice</h3><div class='row wrap'>";
- var ds=["1d20","2d20kh1","1d100","4d6kh3","1d4","1d6","1d8","1d10","1d12"],i;
- for(i=0;i<ds.length;i++)h+="<button onclick='roll(\""+ds[i]+"\")'>"+ds[i]+"</button>";
- h+="</div><input id='dx' placeholder='e.g. 2d10+1d6' style='margin-top:8px'>";
- h+="<button class='pri grow' style='margin-top:6px' onclick='roll($(\"dx\").value)'>ROLL</button></div>";
- return h;
 }
 
 /* ================= SESSION ================= */
@@ -592,27 +775,31 @@ function showMons(i){
 
 /* ================= ORACLE ================= */
 function oracleHTML(){
- return "<div class='card col'><h3>Solo Oracle</h3><div class='dim small'>Ask a yes/no question, then tap.</div><button class='pri' onclick='$(\"oc\").textContent=rnd(ORACLE);log(\"Oracle: \"+$(\"oc\").textContent)'>Ask the Oracle</button><div id='oc' style='font-size:1.4em;text-align:center;min-height:40px;color:var(--accent)'></div><button onclick='genNPC()'>Random NPC</button></div>";
+ var h="<div class='card col'><h3>Solo Oracle</h3><div class='dim small'>Ask a yes/no question, then tap.</div><button class='pri' onclick='$(\"oc\").textContent=rnd(ORACLE);log(\"Oracle: \"+$(\"oc\").textContent)'>Ask the Oracle</button><div id='oc' style='font-size:1.4em;text-align:center;min-height:40px;color:var(--accent)'></div><button onclick='genNPC()'>Random NPC</button></div>";
+ h+="<div class='card'><h3>Dice</h3><div class='row wrap'>";
+ var ds=["1d20","2d20kh1","1d100","4d6kh3","1d4","1d6","1d8","1d10","1d12"],i;
+ for(i=0;i<ds.length;i++)h+="<button onclick='roll(\""+ds[i]+"\")'>"+ds[i]+"</button>";
+ h+="</div><input id='dx' placeholder='e.g. 2d10+1d6' style='margin-top:8px'>";
+ h+="<button class='pri grow' style='margin-top:6px' onclick='roll($(\"dx\").value)'>ROLL</button></div>";
+ return h;
 }
 function genNPC(){
  modal("<h3>NPC</h3><b>"+rnd(NAMES.f)+" "+rnd(NAMES.l)+"</b><div class='small dim' style='margin-top:6px'>"+rnd(["owes money to the wrong people","knows a mountain shortcut","is secretly a retired adventurer","seeks a lost sibling","guards a family secret","will betray you for the right price"])+"</div>");
 }
 
-/* ================= PARTY & TOOLS ================= */
-function partyHTML(){
- var h="";
- for(var i=0;i<S.chars.length;i++){var ch=S.chars[i];
-  h+="<div class='irow' onclick='S.activeChar="+i+";TAB=\"Character\";render()'><b class='grow'>"+esc(ch.name)+"</b><span class='small dim'>"+CLASSES[ch.cls].n+"</span><b>"+ch.hp+"/"+ch.hpMax+"</b></div>";}
- h+="<button class='pri grow' onclick='startBuild()'>New Character</button>";
- return h||"<div class='card dim'>No characters.</div>";
-}
+/* ================= TOOLS ================= */
 function toolsHTML(){
  var h="<div class='card'><h3>Theme</h3><div class='grid3'>";
  var th=[["grimoire","Grimoire"],["elven","Elven"],["abyssal","Abyssal"]];
  for(var i=0;i<3;i++)h+="<div class='pick"+(S.theme===th[i][0]?" on":"")+"' onclick='S.theme=\""+th[i][0]+"\";render()'><b>"+th[i][1]+"</b></div>";
  h+="</div></div>";
- h+="<div class='card'><h3>Backups</h3><div class='grid2'><button onclick='doExport()'>Export All</button><label class='pick' style='text-align:center'>Restore<input type='file' accept='.json' hidden onchange='doImport(this.files[0])'></label></div></div>";
- h+="<div class='card'><button class='ghost' style='color:var(--danger)' onclick='modal(\"<h3>Erase everything?</h3><div class=grid2><button class=pri onclick=localStorage.removeItem(\\\"grimoire\\\");location.reload()>Yes</button><button onclick=closeModal()>No</button></div>\")'>Erase everything</button></div>";
+ h+="<div class='card'><h3>Gemini AI Key</h3>";
+ h+="<div class='row'><input type='password' id='keyIn' value='"+esc(S.aiKey)+"' onchange='S.aiKey=this.value.trim();save()'>";
+ h+="<button onclick='var x=$(\"keyIn\");x.type=x.type===\"password\"?\"text\":\"password\";this.innerText=x.type===\"password\"?\"Show\":\"Hide\"'>Show</button></div>";
+ h+="<div class='small dim' style='margin-top:8px'>Paste your Google Gemini API key to enable DM assistance.</div>";
+ h+="<button id='testBtn' class='pri grow' style='margin-top:8px;width:100%' onclick='testAPI()'>Test Connection</button></div>";
+ h+="<div class='card'><h3>Database</h3><div class='grid2'><button onclick='doExport()'>Export State</button><label class='pick' style='text-align:center'>Restore<input type='file' accept='.json' hidden onchange='doImport(this.files[0])'></label></div></div>";
+ h+="<div class='card'><button class='ghost' style='color:var(--danger)' onclick='modal(\"<h3>Erase everything?</h3><div class=grid2><button class=pri onclick=indexedDB.deleteDatabase(\\\"GrimoireDB\\\");location.reload()>Yes</button><button onclick=closeModal()>No</button></div>\")'>Factory Reset Data</button></div>";
  return h;
 }
 function doExport(){
@@ -627,8 +814,7 @@ function doImport(f){
 }
 
 /* ================= BOOT ================= */
-load();
-render();
+initDB(render);
 </script>
 </body>
 </html>
